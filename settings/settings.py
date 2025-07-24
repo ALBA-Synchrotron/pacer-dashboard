@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from urllib.parse import quote
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,14 +19,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG: bool = True
 
-INSTALLED_APPS: list = [
+LOCAL_APPS: list = [
+    "dashboard",
+]
+
+DJANGO_APPS: list = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
 ]
+
+THIRD_PARTY_APPS: list = [
+    "psqlextra",
+    "rest_framework"
+]
+
+INSTALLED_APPS: list = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE: list = [
     "django.middleware.security.SecurityMiddleware",
@@ -61,7 +74,7 @@ WSGI_APPLICATION: str = "settings.wsgi.application"
 
 DATABASES: dict = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "psqlextra.backend",
         "NAME": os.getenv("POSTGRES_DB", "pacer-dashboard"),
         "USER": os.getenv("POSTGRES_USER", "pacer-dashboard"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "<PASSWORD>"),
@@ -69,6 +82,8 @@ DATABASES: dict = {
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
+
+PSQLEXTRA_PARTITIONING_MANAGER: str = "settings.pg_partition_manager.manager"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -91,5 +106,26 @@ USE_I18N: bool = True
 USE_TZ: bool = True
 
 STATIC_URL: str = "static/"
-
+STATIC_ROOT: str = "./static/"
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
+
+RABBITMQ_BROKER_SETTINGS: dict = {
+    "protocol": os.getenv("RMQ_PROTOCOL", "amqp"),
+    "host": os.getenv("RMQ_HOST", None),
+    "port": os.getenv("RMQ_PORT", "5672"),
+    "username": quote(os.getenv("RMQ_USERNAME", "pacer-dashboard")),
+    "password": quote(os.getenv("RMQ_PASSWORD", "<PASSWORD>")),
+    "vhost": os.getenv("RMQ_VHOST", "/")
+
+}
+
+CELERY_TIMEZONE: str = TIME_ZONE
+CELERY_ACCEPT_CONTENT: list = ["application/json"]
+CELERY_TASK_TIME_LIMIT: int = 30 * 60
+CELERY_BROKER_URL: str = f"{RABBITMQ_BROKER_SETTINGS.get("protocol")}://"
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("username")}:{RABBITMQ_BROKER_SETTINGS.get("password")}@" if RABBITMQ_BROKER_SETTINGS.get(
+    "username") and RABBITMQ_BROKER_SETTINGS.get("password") else CELERY_BROKER_URL
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("host")}:{RABBITMQ_BROKER_SETTINGS.get("port")}" if RABBITMQ_BROKER_SETTINGS.get(
+    "port") else f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("host")}"
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}/{RABBITMQ_BROKER_SETTINGS.get("vhost")}" if RABBITMQ_BROKER_SETTINGS.get(
+    "vhost") else CELERY_BROKER_URL
