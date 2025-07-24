@@ -26,8 +26,6 @@ RUN pip install -r requirements.txt
 
 RUN pip install uwsgi==2.0.30
 
-RUN python manage.py migrate --settings=$SETTINGS_FILE
-
 RUN python manage.py collectstatic -v 0 --settings=$SETTINGS_FILE
 
 RUN apt-get purge -y --auto-remove \
