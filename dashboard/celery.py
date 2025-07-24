@@ -2,7 +2,7 @@ import os
 from celery import Celery
 from kombu import Queue, Exchange
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "proj.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.settings")
 
 app: Celery = Celery("pacer-dashboard")
 
