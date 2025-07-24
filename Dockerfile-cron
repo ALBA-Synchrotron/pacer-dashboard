@@ -1,0 +1,32 @@
+FROM registry.cells.es/docker/python:3.13.5-slim-bullseye
+
+ARG SETTINGS_FILE="settings.settings_local"
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV TZ=Europe/Madrid
+
+WORKDIR /django/app
+
+RUN addgroup pacer
+RUN useradd -g pacer -M pacer
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python-dev \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+
+COPY requirements.txt /django/app/
+COPY dashboard/ /django/app/dashboard/
+COPY settings/ /django/app/settings/
+COPY manage.py /django/app/
+COPY README.md /django/app/
+
+RUN pip install -r requirements.txt
+
+RUN apt-get purge -y --auto-remove \
+    build-essential \
+    python-dev
+
+USER pacer
+
