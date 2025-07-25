@@ -105,7 +105,7 @@ TIME_ZONE: str = "Europe/Madrid"
 USE_I18N: bool = True
 USE_TZ: bool = True
 
-STATIC_URL: str = "static/"
+STATIC_URL: str = "/pacer-dashboard/static/"
 STATIC_ROOT: str = "./static/"
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
 
