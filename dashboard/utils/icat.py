@@ -90,6 +90,10 @@ class ICATClient:
                         if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
                             raise ValueError(f"Value must be non-string iterable for IN operator: {value}")
                         result[field] = f"IN ({cls.__to_sql_in_clause(value)})"
+                    case "not_in":
+                        if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
+                            raise ValueError(f"Value must be non-string iterable for IN operator: {value}")
+                        result[field] = f"NOT IN ({cls.__to_sql_in_clause(value)})"
                     case "gt":
                         result[field] = f"> {value}"
                     case "gte":
