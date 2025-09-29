@@ -1,0 +1,106 @@
+from datetime import datetime
+import logging
+from logging import Logger
+from xml.dom.minidom import Entity
+
+from django.core.management import BaseCommand
+from django.conf import settings
+from django.db.models import QuerySet, Q
+
+from dashboard.models import InvestigationCheck
+from dashboard.utils.icat import ICATClient
+from dashboard.utils.panosc import SimplePaNOSCClient
+from dashboard.utils.rabbitmq import GenericPublisher
+
+logger: Logger = logging.getLogger(__name__)
+
+
+def is_valid_date(date_str: str) -> bool:
+    try:
+        datetime.strptime(date_str, "%d-%m-%Y")
+        return True
+    except ValueError:
+        return False
+
+
+class Command(BaseCommand):
+    help: str = "Check that finished ICAT investigations have a DOI and PaNOSC items created, and if not mint them."
+
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--dry-run", type=bool, default=False, required=False, dest="dry_run",
+                            help="Do not actually send mint / PaNOSC item creation operations to the PACER.")
+        parser.add_argument("--investigation", type=str, default="", required=False, dest="investigation_name",
+                            help="Investigation to run checks for.")
+
+    def handle(self, *args, **options):
+        icat_client: ICATClient = ICATClient(settings.ICAT_AUTH.get("url"),
+                                             settings.ICAT_AUTH.get("username"),
+                                             settings.ICAT_AUTH.get("password"),
+                                             settings.ICAT_AUTH.get("auth_plugin"))
+
+        pss_client: SimplePaNOSCClient = SimplePaNOSCClient(settings.PANOSC_AUTH.get("url"),
+                                                            settings.PANOSC_AUTH.get("username"),
+                                                            settings.PANOSC_AUTH.get("password"))
+
+        icat_search_filters: dict = {"doi__eq": ""}
+        inv_checks_filter: Q = (Q(has_doi=False) | Q(has_panosc_item=False)) & Q(
+            check_retries__lt=settings.INVESTIGATION_CHECK_MAX_RETRIES)
+
+        dry_run: bool = options.get("dry_run")
+        investigation_name: str = options.get("investigation_name")
+
+        end_date_since: str = datetime.now().strftime("%d-%m-%Y")
+
+        if investigation_name:
+            icat_search_filters["name__eq"] = investigation_name
+            inv_checks_filter &= Q(investigation=investigation_name)
+        elif end_date_since:
+            if not is_valid_date(end_date_since):
+                logger.error("Invalid end date filter format. Format: DD-MM-YYYY")
+                return
+            icat_search_filters["endDate__gte"] = end_date_since
+
+        investigations_no_doi_icat: list = icat_client.search("Investigation", conditions=icat_search_filters,
+                                                              flatten_single=False)
+        if not investigations_no_doi_icat:
+            investigations_no_doi_icat = []
+
+        for inv in investigations_no_doi_icat:
+            _, __ = InvestigationCheck.objects.get_or_create(investigation=inv.name)
+
+        investigations_check: QuerySet = InvestigationCheck.objects.filter(inv_checks_filter)
+
+        messages_for_pacer: list = []
+        for inv_check in investigations_check:
+            pacer_ops: list = []
+
+            investigation: Entity = icat_client.search("Investigation",
+                                                       conditions={"name__eq": inv_check.investigation})
+            if not investigation:
+                continue
+
+            # No DOI, DOI check pending, then mint the proposal.
+            if not investigation.doi and not inv_check.has_doi:
+                pacer_ops.append(settings.PACER_INV_OPERATION_MINT)
+
+            # DOI, but check pending, then mark DOI check as complete.
+            if investigation.doi and not inv_check.has_doi:
+                inv_check.has_doi = True
+
+            # No PaNOSC item, PaNOSC item check pending, then create the item.
+            if not pss_client.item_exists(investigation.name) and not inv_check.has_panosc_item:
+                pacer_ops.append(settings.PACER_INV_OPERATION_PANOSC_ITEM)
+
+            # PaNOSC item, but check pending, then mark PaNOSC item check as complete.
+            if pss_client.item_exists(investigation.name) and not inv_check.has_panosc_item:
+                inv_check.has_panosc_item = True
+
+            if not dry_run:
+                inv_check.check_retries += 1
+                inv_check.save()
+
+            messages_for_pacer.append({"name": investigation_name, "operations": pacer_ops})
+        icat_client.logout()
+
+        GenericPublisher.send_messages_to_broker(messages_for_pacer, settings.PACER_INVESTIGATION_OPS_EXCHANGE,
+                                                 settings.PACER_INVESTIGATION_OPS_ROUTING_KEY)

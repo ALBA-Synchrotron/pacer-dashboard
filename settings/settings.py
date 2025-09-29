@@ -85,7 +85,7 @@ DATABASES: dict = {
 
 PSQLEXTRA_PARTITIONING_MANAGER: str = "settings.pg_partition_manager.manager"
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
@@ -105,7 +105,7 @@ TIME_ZONE: str = "Europe/Madrid"
 USE_I18N: bool = True
 USE_TZ: bool = True
 
-STATIC_URL: str = "static/"
+STATIC_URL: str = "/pacer-dashboard/static/"
 STATIC_ROOT: str = "./static/"
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
 
@@ -118,6 +118,33 @@ RABBITMQ_BROKER_SETTINGS: dict = {
     "vhost": os.getenv("RMQ_VHOST", "/")
 
 }
+
+ICAT_AUTH: dict = {
+    "url": os.getenv("ICAT_SERVER_URL", ""),
+    "username": os.getenv("ICAT_USERNAME", ""),
+    "password": os.getenv("ICAT_PASSWORD", ""),
+    "auth_plugin": os.getenv("ICAT_AUTH_PLUGIN", "db"),
+}
+
+PANOSC_AUTH: dict = {
+    "url": os.getenv("PANOSC_API_URL", ""),
+    "username": os.getenv("PANOSC_API_USERNAME", ""),
+    "password": os.getenv("PANOSC_API_PASSWORD", ""),
+}
+
+INVESTIGATION_CHECK_MAX_RETRIES: int = 30
+PACER_INV_OPERATION_MINT: str = "mint-proposal"
+PACER_INV_OPERATION_PANOSC_ITEM: str = "create-panosc-item"
+
+PACER_RMQ_HOST: str = os.getenv("RMQ_HOST", "")
+PACER_RMQ_PORT: int = os.getenv("RMQ_PORT", 0)
+PACER_RMQ_USERNAME: str = os.getenv("RMQ_USERNAME", "")
+PACER_RMQ_PASSWORD: str = os.getenv("RMQ_PASSWORD", "")
+PACER_RMQ_VIRTUAL_HOST: str = os.getenv("RMQ_VHOST", "/")
+PACER_RMQ_PROTOCOL: str = os.getenv("RMQ_PROTOCOL", "amqp")
+
+PACER_INVESTIGATION_OPS_EXCHANGE: str = "investigation-ops-exchange"
+PACER_INVESTIGATION_OPS_ROUTING_KEY: str = "investigation.ops"
 
 CELERY_TIMEZONE: str = TIME_ZONE
 CELERY_ACCEPT_CONTENT: list = ["application/json"]
