@@ -99,7 +99,7 @@ class Command(BaseCommand):
                 inv_check.check_retries += 1
                 inv_check.save()
 
-            messages_for_pacer.append({"name": investigation_name, "operations": pacer_ops})
+            messages_for_pacer.append({"name": str(investigation.name), "operations": pacer_ops})
         icat_client.logout()
 
         GenericPublisher.send_messages_to_broker(messages_for_pacer, settings.PACER_INVESTIGATION_OPS_EXCHANGE,
