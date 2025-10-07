@@ -79,9 +79,10 @@ class Command(BaseCommand):
             if not investigation:
                 continue
 
-            if investigation.endDate > datetime.now(timezone.utc):
-                inv_check.delete()
-                continue
+            if investigation.endDate:
+                if investigation.endDate > datetime.now(timezone.utc):
+                    inv_check.delete()
+                    continue
 
             # No DOI, DOI check pending, then mint the proposal.
             if not investigation.doi and not inv_check.has_doi:
