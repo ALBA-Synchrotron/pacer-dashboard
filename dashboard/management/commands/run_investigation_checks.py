@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from logging import Logger
 from xml.dom.minidom import Entity
@@ -77,6 +77,10 @@ class Command(BaseCommand):
             investigation: Entity = icat_client.search("Investigation",
                                                        conditions={"name__eq": inv_check.investigation})
             if not investigation:
+                continue
+
+            if investigation.endDate > datetime.now(timezone.utc):
+                inv_check.delete()
                 continue
 
             # No DOI, DOI check pending, then mint the proposal.
