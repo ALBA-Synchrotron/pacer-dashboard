@@ -58,7 +58,7 @@ class Command(BaseCommand):
             if not is_valid_date(end_date_since):
                 logger.error("Invalid end date filter format. Format: DD-MM-YYYY")
                 return
-            icat_search_filters["endDate__gte"] = end_date_since
+            icat_search_filters["endDate__lte"] = end_date_since
 
         investigations_no_doi_icat: list = icat_client.search("Investigation", conditions=icat_search_filters,
                                                               flatten_single=False)
