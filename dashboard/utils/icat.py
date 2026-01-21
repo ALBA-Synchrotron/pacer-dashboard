@@ -66,7 +66,7 @@ class ICATClient:
                 formatted.append("NULL")
             else:
                 formatted.append(str(v))
-        return f"{', '.join(formatted)}"
+        return f"{','.join(formatted)}"
 
     @classmethod
     def __parse_custom_conditions(cls, conditions: dict) -> dict:
@@ -95,13 +95,25 @@ class ICATClient:
                             raise ValueError(f"Value must be non-string iterable for IN operator: {value}")
                         result[field] = f"NOT IN ({cls.__to_sql_in_clause(value)})"
                     case "gt":
-                        result[field] = f"> {value}"
+                        if isinstance(value, str):
+                            result[field] = f"> '{value}'"
+                        else:
+                            result[field] = f"> {value}"
                     case "gte":
-                        result[field] = f">= {value}"
+                        if isinstance(value, str):
+                            result[field] = f">= '{value}'"
+                        else:
+                            result[field] = f">= {value}"
                     case "lt":
-                        result[field] = f"< {value}"
+                        if isinstance(value, str):
+                            result[field] = f"< '{value}'"
+                        else:
+                            result[field] = f"< {value}"
                     case "lte":
-                        result[field] = f"<= {value}"
+                        if isinstance(value, str):
+                            result[field] = f"<= '{value}'"
+                        else:
+                            result[field] = f"<= {value}"
                     case "like" | "contains":
                         result[field] = f"LIKE '%{value}%'"
                     case "startswith":

@@ -17,7 +17,7 @@ logger: Logger = logging.getLogger(__name__)
 
 def is_valid_date(date_str: str) -> bool:
     try:
-        datetime.strptime(date_str, "%d-%m-%Y")
+        datetime.strptime(date_str, "%Y-%m-%d")
         return True
     except ValueError:
         return False
@@ -42,21 +42,21 @@ class Command(BaseCommand):
                                                             settings.PANOSC_AUTH.get("username"),
                                                             settings.PANOSC_AUTH.get("password"))
 
-        icat_search_filters: dict = {"doi__eq": ""}
+        icat_search_filters: dict = {"doi__in": [None, ""]}
         inv_checks_filter: Q = (Q(has_doi=False) | Q(has_panosc_item=False)) & Q(
             check_retries__lt=settings.INVESTIGATION_CHECK_MAX_RETRIES)
 
         dry_run: bool = options.get("dry_run")
         investigation_name: str = options.get("investigation_name")
 
-        end_date_since: str = datetime.now().strftime("%d-%m-%Y")
+        end_date_since: str = datetime.now().strftime("%Y-%m-%d")
 
         if investigation_name:
             icat_search_filters["name__eq"] = investigation_name
             inv_checks_filter &= Q(investigation=investigation_name)
         elif end_date_since:
             if not is_valid_date(end_date_since):
-                logger.error("Invalid end date filter format. Format: DD-MM-YYYY")
+                logger.error("Invalid end date filter format. Format: YYYY-MM-DD")
                 return
             icat_search_filters["endDate__lte"] = end_date_since
 
