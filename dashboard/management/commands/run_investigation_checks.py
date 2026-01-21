@@ -42,7 +42,7 @@ class Command(BaseCommand):
                                                             settings.PANOSC_AUTH.get("username"),
                                                             settings.PANOSC_AUTH.get("password"))
 
-        icat_search_filters: dict = {"doi__in": [None, ""]}
+        icat_search_filters: dict = {}
         inv_checks_filter: Q = (Q(has_doi=False) | Q(has_panosc_item=False)) & Q(
             check_retries__lt=settings.INVESTIGATION_CHECK_MAX_RETRIES)
 
@@ -60,8 +60,13 @@ class Command(BaseCommand):
                 return
             icat_search_filters["endDate__lte"] = end_date_since
 
-        investigations_no_doi_icat: list = icat_client.search("Investigation", conditions=icat_search_filters,
+        investigations_empty_doi_icat: list = icat_client.search("Investigation", conditions={**icat_search_filters, "doi__eq": ""},
                                                               flatten_single=False)
+        investigations_null_doi_icat: list = icat_client.search("Investigation",
+                                                                 conditions={**icat_search_filters, "doi__eq": None},
+                                                                 flatten_single=False)
+
+        investigations_no_doi_icat: list = investigations_empty_doi_icat + investigations_null_doi_icat
         if not investigations_no_doi_icat:
             investigations_no_doi_icat = []
 
