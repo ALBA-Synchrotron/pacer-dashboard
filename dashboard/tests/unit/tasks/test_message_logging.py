@@ -3,7 +3,6 @@ from dashboard.utils.test.generic_model_test_case import GenericModelTestCase
 
 
 class MessageTestCase(GenericModelTestCase):
-    fixtures: list = ["message.json"]
 
     def setUp(self) -> None:
         super(MessageTestCase, self).setUp()
@@ -13,8 +12,11 @@ class MessageTestCase(GenericModelTestCase):
 
         self.mandatory_fields_json = {
             "hash": "1234567890",
-            "processed_at": "2021-01-01T00:00:00Z",
+            "processing_start": "2025-07-24T07:31:47.184Z",
+            "processing_end": "2025-07-24T07:31:47.184Z",
             "message_type": "test",
+            "exchange_name": "uos-sync-exchange",
+            "routing_key": "user.sync",
             "payload_format": "test",
             "payload": "test"
         }
