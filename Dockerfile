@@ -49,7 +49,6 @@ RUN echo "[uwsgi]" > uwsgi.ini \
     && echo "static-map=/static/=static" >> uwsgi.ini \
     && echo "touch-reload=/django/app/README.md" >> uwsgi.ini
 
-
 USER pacer
 
 # Serve app

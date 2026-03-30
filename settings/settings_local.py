@@ -6,3 +6,8 @@ ALLOWED_HOSTS: list = ["*"]
 
 CELERY_TASK_ALWAYS_EAGER: bool = True
 STATIC_URL: str = "/static/"
+
+FORCE_SCRIPT_NAME: str = "/pacer-dashboard"
+LOGIN_URL = f"{FORCE_SCRIPT_NAME}/login/"
+LOGIN_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/"
+LOGOUT_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/"
