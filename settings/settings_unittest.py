@@ -23,3 +23,4 @@ DATABASES: dict = {
         }
     }
 }
+

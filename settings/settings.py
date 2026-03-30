@@ -174,3 +174,5 @@ CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get('host')}:
     "port") else f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get('host')}"
 CELERY_BROKER_URL = f"{CELERY_BROKER_URL}/{RABBITMQ_BROKER_SETTINGS.get('vhost')}" if RABBITMQ_BROKER_SETTINGS.get(
     "vhost") else CELERY_BROKER_URL
+
+SECRET_KEY: str = os.getenv("SECRET_KEY", "8snh6_#tk+l=*n#ni@prha&^_kt13da@&64tk&6l@8gn!fppxv")
