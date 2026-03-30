@@ -34,6 +34,7 @@ DJANGO_APPS: list = [
 ]
 
 THIRD_PARTY_APPS: list = [
+    "social_django",
     "psqlextra",
     "rest_framework"
 ]
@@ -52,6 +53,11 @@ MIDDLEWARE: list = [
 
 ROOT_URLCONF: str = "settings.urls"
 
+AUTHENTICATION_BACKENDS: list = [
+    "social_core.backends.open_id_connect.OpenIdConnectAuth",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 TEMPLATES: list = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -62,6 +68,7 @@ TEMPLATES: list = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "dashboard.utils.contexts_processors.django_settings"
             ],
         },
     },
@@ -108,6 +115,17 @@ USE_TZ: bool = True
 STATIC_URL: str = "/pacer-dashboard/static/"
 STATIC_ROOT: str = "./static/"
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+DISABLED_AUTH: bool = False
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_OIDC_OIDC_ENDPOINT: str = os.getenv("SSO_SERVER_URL", "")
+SOCIAL_AUTH_OIDC_KEY: str = os.getenv("SSO_CLIENT_ID", "")
+SOCIAL_AUTH_OIDC_SECRET: str = os.getenv("SSO_CLIENT_SECRET", "")
+SSO_LOGOUT_REDIRECT_URL = f"{SOCIAL_AUTH_OIDC_OIDC_ENDPOINT}/protocol/openid-connect/logout?client_id={SOCIAL_AUTH_OIDC_KEY}&post_logout_redirect_uri={{}}"
 
 RABBITMQ_BROKER_SETTINGS: dict = {
     "protocol": os.getenv("RMQ_PROTOCOL", "amqp"),

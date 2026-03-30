@@ -10,6 +10,9 @@ MODEL_LABELS: dict = {
     "payload": "Payload",
     "errored": "Errored",
     "error_message": "Error message",
+    "acknowledged": "Acknowledged",
+    "exchange_name": "Exchange name",
+    "routing_key": "Routing key",
 }
 
 VERBOSE_NAME: str = "Message"

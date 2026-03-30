@@ -1,0 +1,84 @@
+{% load tags %}
+<div class="card bg-base-100 shadow-sm" style="margin-bottom: 1em;">
+
+    {% if msg.errored %}
+        <div class="indicator">
+            <span class="indicator-item indicator-middle indicator-start badge badge-secondary"></span>
+        </div>
+    {% endif %}
+
+    <div tabindex="0" class="card-body border-base-300 border">
+        <h3 class="card-title" style="padding: 0">
+            {% include 'msg_card/msg_action.html' %}
+            {% if user.is_authenticated or DISABLED_AUTH %}
+                <span class="font-mono">{{ msg.object_identifiers }}</span>
+            {% else %}
+                <div class="skeleton h-4 w-28"></div>
+            {% endif %}
+
+
+        </h3>
+
+        <div class="flex w-full">
+            <div class="card grid grow place-items-left" style="max-width: 40%">
+                <div class="grid grid-cols-1 grid-cols-2 text-sm">
+                    <div class="leading-none">
+                        <b>Hash:</b>
+                        <div>{{ msg.hash|shorten_hash }}</div>
+                    </div>
+                    <div class="leading-none">
+                        <b>Message type:</b>
+                        <div>{{ msg.message_type }}</div>
+                    </div>
+                    <div class="leading-none">
+                        <b>Processed at:</b>
+                        <div>{{ msg.processing_start }}</div>
+                    </div>
+                    <div class="leading-none">
+                        <b>Processing time:</b>
+                        <div>{{ msg.processing_time }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="divider divider-horizontal"></div>
+            <div class="card rounded-box grid h-20 grow place-items-center"
+                 style="max-width: 60%; overflow: auto; resize: vertical; min-height: 5em; max-height: 20em">
+                {% if user.is_authenticated or DISABLED_AUTH %}
+                    <span style="margin-left: 0.5em; margin-right: 0.5em">>
+                        {% if msg.payload_format == "json" %}
+                            {{ msg.payload|pretty_json }}
+                        {% elif msg.payload_format == "xml" %}
+                            {{ msg.payload|pretty_xml }}
+                        {% else %}
+                            {{ msg.payload }}
+                        {% endif %}
+                </span>
+                {% else %}
+                    <div class="flex w-52 flex-col gap-4">
+                        <div class="skeleton h-4 w-28"></div>
+                        <div class="skeleton  h-4 w-full"></div>
+                        <div class="skeleton h-4 w-full"></div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if msg.errored %}
+            {% if user.is_authenticated or DISABLED_AUTH %}
+            <div role="alert" class="alert alert-error alert-outline"
+                 style="margin-top: 0.5em; margin-bottom: 0.5em">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% error_str_parsing msg.error_message as error_dict %}
+                <ul>
+                    {% for key, value in error_dict.items %}
+                        <li>{{ key }}: {{ value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+                {% endif %}
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,13 @@
+{% load static %}
+<footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
+    <div class="container mx-auto text-left">
+        <div>
+            <img class="inline" src="{% static 'assets/ALBA_positiu.png' %}" alt="ALBA Synchrotron logo" width="95em"/>
+            <img class="inline" style="margin-top: 1em" src="{% static 'assets/icat-logo.png' %}" alt="ICAT collaboration logo" width="95em"/>
+            <h1 class="text-center">© <span id="year"></span> ALBA Synchrotron</h1>
+        </div>
+    </div>
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>

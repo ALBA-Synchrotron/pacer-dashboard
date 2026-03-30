@@ -15,9 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+
+from dashboard.views.auth import logout_redirect_to_sso, login_redirect_to_sso
 
 urlpatterns: list = [
+    path("", include("social_django.urls", namespace="social")),
+    path("admin/login/", login_redirect_to_sso, name="admin_sso_login"),
+    path("admin/logout/", logout_redirect_to_sso, name="admin_sso_logout"),
+    path("oidc-logout", logout_redirect_to_sso, name="oidc-logout"),
     path("", include("dashboard.urls.generic")),
     path("admin/", admin.site.urls),
 ]

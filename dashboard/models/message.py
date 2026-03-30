@@ -19,7 +19,9 @@ class Message(PostgresPartitionedModel):
     payload = models.JSONField(verbose_name=MODEL_LABELS.get("payload"))
     errored = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("errored"))
     error_message = models.TextField(null=True, blank=True, verbose_name=MODEL_LABELS.get("error_message"))
-
+    acknowledged = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("acknowledged"))
+    exchange_name = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("exchange_name"))
+    routing_key = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("routing_key"))
     class PartitioningMeta:
         method: str = PostgresPartitioningMethod.RANGE
         key: list = ["created_at"]
