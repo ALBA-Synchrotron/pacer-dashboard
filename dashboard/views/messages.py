@@ -1,7 +1,8 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
+from django.db.models.sql import Query
 from django.views.generic import TemplateView
 
-from dashboard.models import Message
+from dashboard.models import Message, GroupProfile
 
 
 class MessagesView(TemplateView):
@@ -13,4 +14,5 @@ class MessagesView(TemplateView):
         return context
 
     def get_queryset(self) -> QuerySet:
-        return Message.objects.order_by('-id')[:20]
+        user_filter: Q = GroupProfile.get_user_filters(self.request.user)
+        return Message.objects.filter(user_filter).order_by('id')[:20]
