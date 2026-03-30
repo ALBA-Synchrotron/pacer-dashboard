@@ -21,6 +21,8 @@ from dashboard.views.auth import logout_redirect_to_sso, login_redirect_to_sso
 
 urlpatterns: list = [
     path("", include("social_django.urls", namespace="social")),
+    path("sso/login/", login_redirect_to_sso, name="sso_login"),
+    path("sso/logout/", logout_redirect_to_sso, name="sso_logout"),
     path("admin/login/", login_redirect_to_sso, name="admin_sso_login"),
     path("admin/logout/", logout_redirect_to_sso, name="admin_sso_logout"),
     path("oidc-logout", logout_redirect_to_sso, name="oidc-logout"),
