@@ -1,5 +1,4 @@
 from django.db.models import QuerySet, Q
-from django.db.models.sql import Query
 from django.views.generic import TemplateView
 
 from dashboard.models import Message, GroupProfile

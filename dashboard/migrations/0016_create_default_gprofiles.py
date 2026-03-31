@@ -33,7 +33,7 @@ def create_default_groups(_apps, _schema):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('dashboard', '0014_remove_groupprofile_restricted_message_types_and_more'),
+        ('dashboard', '0015_groupprofile_msg_actions_allowed'),
     ]
 
     operations = [
