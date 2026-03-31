@@ -13,9 +13,10 @@ class GroupProfile(models.Model):
         verbose_name=MODEL_LABELS.get("group"),
     )
     allowed_message_types = models.CharField(max_length=255, blank=True, null=True,
-                                                verbose_name=MODEL_LABELS.get("allowed_message_types"))
+                                             verbose_name=MODEL_LABELS.get("allowed_message_types"))
     allowed_object_identifiers = models.CharField(max_length=255, blank=True, null=True,
                                                   verbose_name=MODEL_LABELS.get("allowed_object_identifiers"))
+    msg_actions_allowed = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("msg_actions_allowed"))
 
     class Meta:
         verbose_name: str = VERBOSE_NAME
@@ -24,20 +25,26 @@ class GroupProfile(models.Model):
     @classmethod
     def get_user_filters(cls, user: User) -> Q:
         cache_key: str = f"{user.username}_profile_filters"
-        query: Q = cache.get(cache_key, Q())
+        query: Q = cache.get(cache_key, None)
         if query:
             return query
 
-        profiles: QuerySet = user.groups.select_related("groupprofile").all()
-        allowed_msg_types: str = ",".join(
-            i.groupprofile.allowed_message_types for i in profiles if i.groupprofile.allowed_message_types)
-        allowed_object_identifiers: str = ",".join(
-            i.groupprofile.allowed_object_identifiers for i in profiles if i.groupprofile.allowed_object_identifiers)
+        query = Q()
 
-        if allowed_msg_types:
-            query &= Q(message_type__in=allowed_msg_types.split(","))
+        if not "Administrator" in [i.name for i in user.groups.all()] or user.groups.count() == 0:
 
-        if allowed_object_identifiers:
-            query &= Q(object_identifiers__instrument__in=allowed_object_identifiers.split(","))
+            profiles: QuerySet = user.groups.select_related("groupprofile").all()
+            allowed_msg_types: str = ",".join(
+                i.groupprofile.allowed_message_types for i in profiles if i.groupprofile.allowed_message_types)
+            allowed_object_identifiers: str = ",".join(
+                i.groupprofile.allowed_object_identifiers for i in profiles if i.groupprofile.allowed_object_identifiers)
+
+            if allowed_msg_types:
+                query &= Q(message_type__in=allowed_msg_types.split(","))
+
+            if allowed_object_identifiers:
+                query &= Q(object_identifiers__instrument__in=allowed_object_identifiers.split(","))
+
+            cache.set(cache_key, query, timeout=60 * 60 * 24)
 
         return query

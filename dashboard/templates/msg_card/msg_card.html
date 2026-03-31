@@ -10,7 +10,7 @@
     <div tabindex="0" class="card-body border-base-300 border">
         <h3 class="card-title" style="padding: 0">
             {% include 'msg_card/msg_action.html' %}
-            {% if user.is_authenticated or DISABLED_AUTH %}
+            {% if user.is_authenticated and user.groups.count != 0  or DISABLED_AUTH %}
                 <span class="font-mono">{{ msg.object_identifiers }}</span>
             {% else %}
                 <div class="skeleton h-4 w-28"></div>
@@ -43,7 +43,7 @@
             <div class="divider divider-horizontal"></div>
             <div class="card rounded-box grid h-20 grow place-items-center"
                  style="max-width: 60%; overflow: auto; resize: vertical; min-height: 5em; max-height: 20em">
-                {% if user.is_authenticated or DISABLED_AUTH %}
+                {% if user.is_authenticated and user.groups.count != 0 or DISABLED_AUTH %}
                     <span style="margin-left: 0.5em; margin-right: 0.5em">>
                         {% if msg.payload_format == "json" %}
                             {{ msg.payload|pretty_json }}
@@ -63,7 +63,7 @@
             </div>
         </div>
         {% if msg.errored %}
-            {% if user.is_authenticated or DISABLED_AUTH %}
+            {% if user.is_authenticated and user.groups.count != 0 or DISABLED_AUTH %}
             <div role="alert" class="alert alert-error alert-outline"
                  style="margin-top: 0.5em; margin-bottom: 0.5em">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"

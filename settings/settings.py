@@ -107,6 +107,11 @@ AUTH_PASSWORD_VALIDATORS: list = [
     },
 ]
 
+
+FIXTURE_DIRS: set = {
+    os.path.join(BASE_DIR, "dashboard/tests/fixtures/"),
+}
+
 LANGUAGE_CODE: str = "en-us"
 TIME_ZONE: str = "Europe/Madrid"
 USE_I18N: bool = True
