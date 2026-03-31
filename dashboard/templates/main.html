@@ -22,6 +22,11 @@
             </div>
         {% endif %}
     {% endif %}
+    {% if user.groups.count == 0 %}
+        <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
+            <span>You aren't assigned to any group. Ask MIS to have your user assigned to a group to view full details of the messages.</span>
+        </div>
+    {% endif %}
     <span id="message-results">
 
 </span>
