@@ -24,6 +24,7 @@ LOCAL_APPS: list = [
 ]
 
 DJANGO_APPS: list = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -36,7 +37,7 @@ DJANGO_APPS: list = [
 THIRD_PARTY_APPS: list = [
     "social_django",
     "psqlextra",
-    "rest_framework"
+    "rest_framework",
 ]
 
 INSTALLED_APPS: list = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -75,6 +76,7 @@ TEMPLATES: list = [
 ]
 
 WSGI_APPLICATION: str = "settings.wsgi.application"
+ASGI_APPLICATION = "settings.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -161,6 +163,8 @@ PACER_RMQ_PASSWORD: str = os.getenv("RMQ_PASSWORD", "")
 PACER_RMQ_VIRTUAL_HOST: str = os.getenv("RMQ_VHOST", "/")
 PACER_RMQ_PROTOCOL: str = os.getenv("RMQ_PROTOCOL", "amqp")
 
+REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
+
 PACER_INVESTIGATION_OPS_EXCHANGE: str = "investigation-ops-exchange"
 PACER_INVESTIGATION_OPS_ROUTING_KEY: str = "investigation.ops"
 
@@ -176,3 +180,16 @@ CELERY_BROKER_URL = f"{CELERY_BROKER_URL}/{RABBITMQ_BROKER_SETTINGS.get('vhost')
     "vhost") else CELERY_BROKER_URL
 
 SECRET_KEY: str = os.getenv("SECRET_KEY", "8snh6_#tk+l=*n#ni@prha&^_kt13da@&64tk&6l@8gn!fppxv")
+
+# WEBSOCKET CONFIG
+WEBSOCKET_DEFAULT_ROOM_NAME = "messages"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)], # container name / host name
+            "expiry": 60,
+        },
+    },
+}

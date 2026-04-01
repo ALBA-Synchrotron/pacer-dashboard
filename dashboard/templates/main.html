@@ -10,7 +10,7 @@
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
-{% include 'navbar.html' %}
+{% include "navbar.html" %}
 <body>
 
 <button hx-get="tmpl/messages" hx-trigger="click,load" hx-target="#message-results">ASD</button>
@@ -22,15 +22,50 @@
             </div>
         {% endif %}
     {% endif %}
-    <span id="message-results">
-
-</span>
+    <span id="message-results"></span>
 </div>
-{% include 'footer.html' %}
+{% include "footer.html" %}
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
         integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@hiseb/confetti@2.1.0/dist/confetti.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
+<script>
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const messagesRoomName = "messages";
+    const socketUrl = `${protocol}://${window.location.host}/ws/${messagesRoomName}/`;
+
+    const rws = new ReconnectingWebSocket(socketUrl);
+
+    rws.timeoutInterval = 3000;
+    rws.maxReconnectInterval = 10000;
+
+    rws.onopen = function (e) {
+       console.log("Connected to Messages WebSocket!");
+    };
+
+    rws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log("New message received!", data.message);
+
+        // TODO: DOM update logic here
+        const container = document.querySelector('#message-results');
+        if (container) {
+            const newMsg = document.createElement('div');
+            newMsg.textContent = data.message;
+            container.appendChild(newMsg);
+        }
+    };
+
+    rws.onclose = function(e) {
+        // reconnecting-websocket lib will automatically try to reconnect
+        console.warn("Messages Websocket closed. Reconnecting...");
+    };
+
+    rws.onerror = function(err) {
+        console.error("Messages WebSocket Error: ", err);
+    };
+</script>
 </html>
