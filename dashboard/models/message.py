@@ -1,3 +1,4 @@
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from psqlextra.models import PostgresPartitionedModel
 from psqlextra.partitioning import PostgresCurrentTimePartitioningStrategy, PostgresTimePartitionSize, \
@@ -29,6 +30,10 @@ class Message(PostgresPartitionedModel):
     class Meta:
         verbose_name: str = VERBOSE_NAME
         verbose_name_plural: str = VERBOSE_NAME_PLURAL
+        indexes: list = [
+            models.Index(fields=["message_type"]),
+            GinIndex(fields=["object_identifiers"]),
+        ]
 
     @classmethod
     def get_partition_config(cls) -> PostgresPartitioningConfig:

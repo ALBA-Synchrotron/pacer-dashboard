@@ -6,10 +6,6 @@ ALLOWED_HOSTS: list = ["*"]
 
 TESTING_MODE: bool = True
 
-FIXTURE_DIRS: set = {
-    os.path.join(BASE_DIR, 'dashboard', 'tests', 'fixtures'),
-}
-
 DATABASES: dict = {
     "default": {
         "ENGINE": "psqlextra.backend",
