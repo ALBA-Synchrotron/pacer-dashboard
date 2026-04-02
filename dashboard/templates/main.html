@@ -1,3 +1,4 @@
+{% load tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,24 +13,36 @@
 </head>
 {% include "navbar.html" %}
 <body>
-
-<button hx-get="tmpl/messages" hx-trigger="click,load" hx-target="#message-results">ASD</button>
-<div class="container mx-auto" style="margin-top: 0em">
-    {% if not user.is_authenticated %}
-        {% if not DISABLED_AUTH %}
-            <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
-                <span>You aren't logged in. Authenticate to view full details of the messages.</span>
-            </div>
-        {% endif %}
-    {% endif %}
-    {% if user.groups.count == 0 %}
-        <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
-            <span>You aren't assigned to any group. Ask MIS to have your user assigned to a group to view full details of the messages.</span>
+<div class="drawer">
+    <input id="filters-drawer" type="checkbox" class="drawer-toggle"/>
+    <div class="drawer-content">
+        <span hx-get="{% app_subpath %}/tmpl/messages" hx-trigger="load" hx-target="#message-results"></span>
+        <div class="container mx-auto" style="margin-top: 1em">
+            {% if not user.is_authenticated %}
+                {% if not DISABLED_AUTH %}
+                    <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
+                        <span>You aren't logged in. Authenticate to view full details of the messages.</span>
+                    </div>
+                {% endif %}
+            {% endif %}
+            {% if user.groups.count == 0  and user.is_authenticated %}
+                <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
+                    <span>You aren't assigned to any group. Ask MIS to have your user assigned to a group to view full details of the messages.</span>
+                </div>
+            {% endif %}
+            <span id="message-results"></span>
         </div>
-    {% endif %}
-    <span id="message-results"></span>
+        {% include "footer.html" %}
+    </div>
+    <div class="drawer-side">
+        <label for="filters-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+        <ul class="menu bg-base-200 min-h-full w-80 p-4">
+            {% include "sidebar_drawer.html" %}
+        </ul>
+    </div>
 </div>
-{% include "footer.html" %}
+
+
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"

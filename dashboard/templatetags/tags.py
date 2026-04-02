@@ -2,6 +2,7 @@ import json
 import xml
 
 from django import template
+from django.conf import settings
 
 register = template.Library()
 
@@ -27,6 +28,12 @@ def pretty_json(value) -> str:
     except Exception:
         return value
 
+
+@register.simple_tag
+def app_subpath() -> str:
+    if not settings.FORCE_SCRIPT_NAME:
+        return ""
+    return settings.FORCE_SCRIPT_NAME
 
 @register.filter
 def pretty_xml(value) -> str:

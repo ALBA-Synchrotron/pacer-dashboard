@@ -1,3 +1,5 @@
-{% for msg in messages %}
-    {% include "msg_card/msg_card.html" with msg=msg %}
+{% load tags %}
+{% for msg in msg_page_obj %}
+    {% include "msg_card/msg_card.html" with msg=msg%}
+    
 {% endfor %}

@@ -18,15 +18,7 @@
             </svg>
             <input type="search" class="grow" placeholder="Search" style="width: 100%"/>
         </label>
-        <div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-            <div class="badge badge-outline">user-sync</div>
-        </div>
+        <label for="filters-drawer" class="btn drawer-button">Filters</label>
     </div>
     {% if not user.is_authenticated %}
         {% if not DISABLED_AUTH %}
