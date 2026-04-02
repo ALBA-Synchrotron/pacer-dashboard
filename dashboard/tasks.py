@@ -1,7 +1,9 @@
 import datetime
+import asyncio
+import datetime
 import json
+from asyncio import AbstractEventLoop
 
-from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
 from django.conf import settings
@@ -10,6 +12,7 @@ from django.db import transaction
 from dashboard.models import Message
 from dashboard.utils.messages import get_payload_format
 
+_loop: AbstractEventLoop | None = None
 
 @shared_task(queue="dashboard-logging", retry_backoff=True, retry_kwargs={"max_retries": 10})
 def log_pacer_message(object_identifiers: dict, processing_start: str, processing_end: str, hash: str,
@@ -36,16 +39,34 @@ def log_pacer_message(object_identifiers: dict, processing_start: str, processin
     with transaction.atomic():
         _ = Message.objects.create(**msg_defaults)
 
-    # Send a new message notification to Websocket with its contents
-    # Using async_to_sync because layer.group_send() is an asynchronous method and log_pacer_message() is synchronous
-    # According to https://channels.readthedocs.io/en/latest/ "type" should replace the caller underscores [_] for dots [.]
+    # WEBSOCKET NEW MESSAGE EVENT
 
-    room_list = [f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room"]
-    layer = get_channel_layer()
-    async_to_sync(layer.group_send)(
-        f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room",
-        {
-            "type": "new.message",
-            "message": msg_defaults,
-        }
-    )
+    # channels-rabbitmq lib driver requires a persistent event loop running before initializing and does not support
+    # async_to_sync the way channels-redis does.
+    # Since this is executed in a celery synchronous worker, using asyncio.run would create a new eventloop each time a
+    # message arrives, which triggers a RuntimeError because the connection is bound to the first event loop it saw.
+    # We can solve this by using a singleton-like approach to reuse the same loop across all tasks within the same
+    # worker process.
+    def get_worker_loop():
+        global _loop
+        if _loop is None or _loop.is_closed():
+            try:
+                _loop = asyncio.get_event_loop()
+            except RuntimeError:
+                _loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(_loop)
+        return _loop
+
+    async def send_to_channel():
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room",
+            {
+                "type": "new.message", # replace the caller underscores [_] for dots [.]
+                "message": {"event": "new.message"},
+            }
+        )
+
+    # Use async_to_sync(send_to_channel()) if using Redis and forget about the loop.
+    loop = get_worker_loop()
+    loop.run_until_complete(send_to_channel())

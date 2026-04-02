@@ -31,7 +31,10 @@ class WSConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+
 class MessagesConsumer(WSConsumer):
+    channel_name = "dashboard-messages"
+
     async def new_message(self, event):
         message: dict = event["message"]
 

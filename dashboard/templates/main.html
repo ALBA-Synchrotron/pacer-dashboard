@@ -55,13 +55,8 @@
         const data = JSON.parse(e.data);
         console.log("New message received!", data.message);
 
-        // TODO: DOM update logic here
-        const container = document.querySelector('#message-results');
-        if (container) {
-            const newMsg = document.createElement('div');
-            newMsg.textContent = data.message;
-            container.appendChild(newMsg);
-        }
+        // TODO: trigger htmx (and animations if so) here
+
     };
 
     rws.onclose = function(e) {
