@@ -1,6 +1,5 @@
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Q
-from django.http import HttpResponse
 from django.views.generic import TemplateView
 
 from dashboard.models import Message, GroupProfile
@@ -22,7 +21,7 @@ class MessagesView(TemplateView):
 
         return Message.objects.filter(user_filter).order_by('-id')
 
-class GetById(TemplateView):
+class TemplateGetById(TemplateView):
     template_name: str = "new_message.html"
 
     def get_context_data(self, **kwargs) -> dict:

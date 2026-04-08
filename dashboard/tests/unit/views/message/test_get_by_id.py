@@ -1,65 +1,83 @@
-from django.test import TestCase, RequestFactory
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+
+
 from dashboard.models.message import Message
-from dashboard.views.messages import GetById
+from dashboard.utils.test.generic_view_test_case import GenericViewTest
 
 
-class GetByIdViewTest(TestCase):
+User = get_user_model()
+
+class MessageViewTestCase(GenericViewTest):
+    fixtures: list[str] = ['message.json']
+    base_url: str = '/tmpl/messages/'
+
     def setUp(self):
-        self.factory = RequestFactory()
-        self.user = User.objects.create_user(username="testuser", password="pass")
-        # Creamos un mensaje de prueba
-        self.msg = Message.objects.create(payload="Contenido de prueba")
+        super(MessageViewTestCase, self).setUp()
 
-    def test_get_context_data_with_valid_message(self):
-        """Si el mensaje existe y el filtro pasa, debe estar en el contexto."""
-        # Setup: Simulamos la URL con el ID
-        request = self.factory.get(f'/tmpl/messages/{self.msg.pk}/')
-        request.user = self.user
+        self.model_class = Message
+        self.model_name = "message"
 
-        view = GetById()
-        view.request = request
-        view.kwargs = {'msg_id': self.msg.pk}
+        self.admin_user = User.objects.create_user(username='admin', email='', password='')
+        admin_group = Group.objects.get(name="Administrator")
+        self.admin_user.groups.add(admin_group)
 
-        # Ejecución
-        context = view.get_context_data()
+        self.reader_user = User.objects.create_user(username='reader_user', email='', password='')
+        reader_group = Group.objects.get(name="Readers")
+        self.reader_user.groups.add(reader_group)
 
-        # Aserciones
-        self.assertIn('msg', context)
-        self.assertEqual(context['msg'].pk, self.msg.pk)
+        self.bl06_user = User.objects.create_user(username='bl06_user', email='', password='')
+        bl06_group = Group.objects.get(name="BL06")
+        self.bl06_user.groups.add(bl06_group)
 
-    def test_get_object_returns_none_if_not_found(self):
-        """Si el ID no existe, get_object debe devolver None."""
-        request = self.factory.get('/tmpl/messages/999/')
-        request.user = self.user
+        self.bl13_user = User.objects.create_user(username='bl13_user', email='', password='')
+        bl13_group = Group.objects.get(name="BL13")
+        self.bl13_user.groups.add(bl13_group)
 
-        view = GetById()
-        view.request = request
-        view.kwargs = {'msg_id': 999}
 
-        # Ejecución
-        obj = view.get_object()
+    def test_get_by_id(self):
+        url: str = self.base_url + self.invalid_id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
 
-        # Aserciones
-        self.assertIsNone(obj)
+        url = self.base_url + str(self.valid_id)
+        self.login(self.admin_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('user-sync', response.content.decode())
 
-    def test_get_object_with_user_filters(self):
-        """
-        Verifica que el filtro de GroupProfile se aplica.
-        Si el filtro excluye el mensaje, get_object debe devolver None.
-        """
-        # Nota: Aquí dependes de cómo funcione GroupProfile.get_user_filters.
-        # Si el usuario no tiene grupos y eso restringe el acceso, el test fallará (correctamente).
+        url = self.base_url + str(self.valid_id)
+        self.login(self.reader_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.content)
 
-        request = self.factory.get(f'/tmpl/messages/{self.msg.pk}/')
-        request.user = self.user  # Usuario sin grupos asignados
+        url = self.base_url + str(self.valid_id)
+        self.login(self.bl06_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.content)
 
-        view = GetById()
-        view.request = request
-        view.kwargs = {'msg_id': self.msg.pk}
+        url = self.base_url + '2'
+        self.login(self.admin_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('dataset-ingestion', response.content.decode())
 
-        obj = view.get_object()
+        url = self.base_url + '2'
+        self.login(self.reader_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('dataset-ingestion', response.content.decode())
 
-        # Si tu lógica de GroupProfile es estricta, esto debería ser None
-        # si el usuario no pertenece al grupo adecuado.
-        # self.assertIsNone(obj)
+        url = self.base_url + '2'
+        self.login(self.bl06_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('dataset-ingestion', response.content.decode())
+
+        url = self.base_url + '2'
+        self.login(self.bl13_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.content)
