@@ -93,12 +93,10 @@
     rws.onmessage = function(e) {
         const data = JSON.parse(e.data);
         const msgId = data.message_id;
+        console.log("New event received: ", msgId);
         htmx.ajax('GET', '{% app_subpath %}/tmpl/messages/' + msgId, {
             target: '#message-results',
             swap: 'afterbegin',
-        }).then(() => {
-            console.log("New event received: ", msgId);
-            confetti({ origin: { y: 0.7 } });
         });
     };
 
