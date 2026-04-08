@@ -35,9 +35,5 @@ class WSConsumer(AsyncWebsocketConsumer):
 class MessagesConsumer(WSConsumer):
     channel_name = "dashboard-messages"
 
-    async def new_message(self, event):
-        message: dict = event["message"]
-
-        await self.send(text_data=json.dumps({
-            "message": message
-        }))
+    async def new_message(self, event: dict):
+        await self.send(text_data=json.dumps(event))

@@ -10,13 +10,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <style>
+        .msg-card-animate {
+            transition: all 0.6s ease-in-out;
+            display: grid;
+            grid-template-rows: 1fr;
+            opacity: 1;
+            margin-bottom: 1em;
+
+            @starting-style {
+                grid-template-rows: 0fr;
+                opacity: 0;
+                margin-bottom: 0;
+            }
+        }
+
+        .msg-card-animate > div {
+            overflow: hidden;
+        }
+    </style>
 </head>
 {% include "navbar.html" %}
 <body>
 <div class="drawer">
     <input id="filters-drawer" type="checkbox" class="drawer-toggle"/>
     <div class="drawer-content">
-        <span hx-get="{% app_subpath %}/tmpl/messages" hx-trigger="load" hx-target="#message-results"></span>
+        <div hx-get="{% app_subpath %}/tmpl/messages"
+              hx-trigger="load"
+              hx-target="#message-results"
+              hx-indicator="#loading-spinner"
+        ></div>
+        <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
+            <span class="loading loading-dots loading-lg text-primary"></span>
+        </div>
         <div class="container mx-auto" style="margin-top: 1em">
             {% if not user.is_authenticated %}
                 {% if not DISABLED_AUTH %}
@@ -61,15 +87,19 @@
     rws.maxReconnectInterval = 10000;
 
     rws.onopen = function (e) {
-       console.log("Connected to Messages WebSocket!");
+       console.log("Connected to Messages WebSocket, welcome");
     };
 
     rws.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log("New message received!", data.message);
-
-        // TODO: trigger htmx (and animations if so) here
-
+        const msgId = data.message_id;
+        htmx.ajax('GET', '{% app_subpath %}/tmpl/messages/' + msgId, {
+            target: '#message-results',
+            swap: 'afterbegin',
+        }).then(() => {
+            console.log("New event received: ", msgId);
+            confetti({ origin: { y: 0.7 } });
+        });
     };
 
     rws.onclose = function(e) {

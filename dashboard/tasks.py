@@ -37,7 +37,7 @@ def log_pacer_message(object_identifiers: dict, processing_start: str, processin
     msg_defaults["processing_time"] = processing_seconds
 
     with transaction.atomic():
-        _ = Message.objects.create(**msg_defaults)
+        msg = Message.objects.create(**msg_defaults)
 
     # WEBSOCKET NEW MESSAGE EVENT
 
@@ -63,10 +63,10 @@ def log_pacer_message(object_identifiers: dict, processing_start: str, processin
             f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room",
             {
                 "type": "new.message", # replace the caller underscores [_] for dots [.]
-                "message": {"event": "new.message"},
+                "message_id": msg.id,
             }
         )
 
-    # Use async_to_sync(send_to_channel()) if using Redis and forget about the loop.
+    # Use async_to_sync(send_to_channel()) if using Redis.
     loop = get_worker_loop()
     loop.run_until_complete(send_to_channel())

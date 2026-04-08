@@ -1,6 +1,6 @@
 {% load tags %}
-<div class="card bg-base-100 shadow-sm msg-card" style="margin-bottom: 1em;">
-
+<div class="card bg-base-100 shadow-sm msg-card {% if is_new %}msg-card-animate{% endif %}"
+     style="margin-bottom: 1em;">
     {% if msg.errored %}
         <div class="indicator">
             <span class="indicator-item indicator-middle indicator-start badge badge-secondary"></span>
@@ -15,8 +15,6 @@
             {% else %}
                 <div class="skeleton h-4 w-28"></div>
             {% endif %}
-
-
         </h3>
 
         <div class="flex w-full">
