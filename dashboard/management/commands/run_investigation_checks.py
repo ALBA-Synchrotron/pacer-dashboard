@@ -31,6 +31,8 @@ class Command(BaseCommand):
                             help="Do not actually send mint / PaNOSC item creation operations to the PACER.")
         parser.add_argument("--investigation", type=str, default="", required=False, dest="investigation_name",
                             help="Investigation to run checks for.")
+        parser.add_argument("--visit_id", type=str, default="", required=False, dest="visit_id",
+                            help="Investigation to run checks for.")
 
     def handle(self, *args, **options):
         icat_client: ICATClient = ICATClient(settings.ICAT_AUTH.get("url"),
@@ -48,12 +50,21 @@ class Command(BaseCommand):
 
         dry_run: bool = options.get("dry_run")
         investigation_name: str = options.get("investigation_name")
+        visit_id: str = options.get("visit_id")
 
         end_date_since: str = datetime.now().strftime("%Y-%m-%d")
 
         if investigation_name:
+            if not visit_id:
+                logger.error("Investigation name provided, but no visit ID provided.")
+                return
+
             icat_search_filters["name__eq"] = investigation_name
             inv_checks_filter &= Q(investigation=investigation_name)
+
+            icat_search_filters["visit_id__eq"] = visit_id
+            inv_checks_filter &= Q(visit_id=visit_id)
+
         elif end_date_since:
             if not is_valid_date(end_date_since):
                 logger.error("Invalid end date filter format. Format: YYYY-MM-DD")
@@ -71,7 +82,7 @@ class Command(BaseCommand):
             investigations_no_doi_icat = []
 
         for inv in investigations_no_doi_icat:
-            _, __ = InvestigationCheck.objects.get_or_create(investigation=inv.name)
+            _, __ = InvestigationCheck.objects.get_or_create(investigation=inv.name, visit_id=inv.visitId)
 
         investigations_check: QuerySet = InvestigationCheck.objects.filter(inv_checks_filter)
 
@@ -80,7 +91,8 @@ class Command(BaseCommand):
             pacer_ops: list = []
 
             investigation: Entity = icat_client.search("Investigation",
-                                                       conditions={"name__eq": inv_check.investigation})
+                                                       conditions={"name__eq": inv_check.investigation,
+                                                                   "visitId__eq": inv_check.visit_id},)
             if not investigation:
                 continue
 
@@ -97,19 +109,21 @@ class Command(BaseCommand):
             if investigation.doi and not inv_check.has_doi:
                 inv_check.has_doi = True
 
+            pss_id: str = f"{investigation.name}/{investigation.visitId}"
+
             # No PaNOSC item, PaNOSC item check pending, then create the item.
-            if not pss_client.item_exists(investigation.name) and not inv_check.has_panosc_item:
+            if not pss_client.item_exists(pss_id) and not inv_check.has_panosc_item:
                 pacer_ops.append(settings.PACER_INV_OPERATION_PANOSC_ITEM)
 
             # PaNOSC item, but check pending, then mark PaNOSC item check as complete.
-            if pss_client.item_exists(investigation.name) and not inv_check.has_panosc_item:
+            if pss_client.item_exists(pss_id) and not inv_check.has_panosc_item:
                 inv_check.has_panosc_item = True
 
             if not dry_run:
                 inv_check.check_retries += 1
                 inv_check.save()
 
-            messages_for_pacer.append({"name": str(investigation.name), "operations": pacer_ops})
+            messages_for_pacer.append({"name": str(investigation.name), "visit_id": str(investigation.visitId), "operations": pacer_ops})
         icat_client.logout()
 
         GenericPublisher.send_messages_to_broker(messages_for_pacer, settings.PACER_INVESTIGATION_OPS_EXCHANGE,
