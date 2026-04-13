@@ -1,6 +1,8 @@
 MODEL_LABELS: dict = {
     "created_at": "Created at",
-    "processed_at": "Processed at",
+    "processing_start": "Processing start",
+    "processing_end": "Processing end",
+    "processing_time": "Processing time",
     "hash": "Hash",
     "message_type": "Message type",
     "object_identifiers": "Object identifiers",
@@ -8,6 +10,9 @@ MODEL_LABELS: dict = {
     "payload": "Payload",
     "errored": "Errored",
     "error_message": "Error message",
+    "acknowledged": "Acknowledged",
+    "exchange_name": "Exchange name",
+    "routing_key": "Routing key",
 }
 
 VERBOSE_NAME: str = "Message"

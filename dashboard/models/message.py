@@ -1,3 +1,4 @@
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from psqlextra.models import PostgresPartitionedModel
 from psqlextra.partitioning import PostgresCurrentTimePartitioningStrategy, PostgresTimePartitionSize, \
@@ -9,7 +10,9 @@ from ..labels.message import MODEL_LABELS, VERBOSE_NAME, VERBOSE_NAME_PLURAL
 
 class Message(PostgresPartitionedModel):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=MODEL_LABELS.get("created_at"))
-    processed_at = models.DateTimeField(null=True, blank=True, verbose_name=MODEL_LABELS.get("processed_at"))
+    processing_start = models.DateTimeField(null=True, blank=True, verbose_name=MODEL_LABELS.get("processing_start"))
+    processing_end = models.DateTimeField(null=True, blank=True, verbose_name=MODEL_LABELS.get("processing_end"))
+    processing_time = models.FloatField(null=True, blank=True, verbose_name=MODEL_LABELS.get("processing_time"))
     hash = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("hash"))
     message_type = models.CharField(max_length=255, default="unknown", verbose_name=MODEL_LABELS.get("message_type"))
     object_identifiers = models.JSONField(verbose_name=MODEL_LABELS.get("object_identifiers"), null=True, blank=True)
@@ -17,7 +20,9 @@ class Message(PostgresPartitionedModel):
     payload = models.JSONField(verbose_name=MODEL_LABELS.get("payload"))
     errored = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("errored"))
     error_message = models.TextField(null=True, blank=True, verbose_name=MODEL_LABELS.get("error_message"))
-
+    acknowledged = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("acknowledged"))
+    exchange_name = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("exchange_name"))
+    routing_key = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("routing_key"))
     class PartitioningMeta:
         method: str = PostgresPartitioningMethod.RANGE
         key: list = ["created_at"]
@@ -25,6 +30,10 @@ class Message(PostgresPartitionedModel):
     class Meta:
         verbose_name: str = VERBOSE_NAME
         verbose_name_plural: str = VERBOSE_NAME_PLURAL
+        indexes: list = [
+            models.Index(fields=["message_type"]),
+            GinIndex(fields=["object_identifiers"]),
+        ]
 
     @classmethod
     def get_partition_config(cls) -> PostgresPartitioningConfig:

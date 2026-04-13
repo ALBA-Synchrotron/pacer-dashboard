@@ -5,6 +5,7 @@ from ..labels.investigation_check import MODEL_LABELS, VERBOSE_NAME, VERBOSE_NAM
 
 class InvestigationCheck(models.Model):
     investigation = models.CharField(max_length=255, verbose_name=MODEL_LABELS.get("investigation"))
+    visit_id = models.CharField(max_length=255, default="", verbose_name=MODEL_LABELS.get("visit_id"))
     has_doi = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("has_doi"))
     has_panosc_item = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("has_panosc_item"))
     first_check_date = models.DateTimeField(auto_now_add=True, verbose_name=MODEL_LABELS.get("first_check_date"))

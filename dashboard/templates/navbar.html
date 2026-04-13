@@ -1,0 +1,41 @@
+<div class="navbar bg-base-100 shadow-sm sticky top-0 z-10">
+    <div class="flex-1">
+        <a class="btn btn-ghost text-xl" hx-on:click="confetti()">PACER dashboard</a>
+    </div>
+    <div class="flex-2">
+        <label class="input">
+            <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <g
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                        stroke-width="2.5"
+                        fill="none"
+                        stroke="currentColor"
+                >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                </g>
+            </svg>
+            <input type="search" class="grow" placeholder="Search" style="width: 100%"/>
+        </label>
+        <label for="filters-drawer" class="btn drawer-button">Filters</label>
+    </div>
+    {% if not user.is_authenticated %}
+        {% if not DISABLED_AUTH %}
+            <div class="flex-none">
+                <a href="{% url "sso_login" %}" class="btn btn-square btn-ghost">
+                    Login
+                </a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="flex-none">
+            <a href="{% url "sso_logout" %}"
+               class="btn btn-square btn-ghost">
+                Logout
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+

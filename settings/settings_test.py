@@ -1,5 +1,16 @@
+import os
+
 from .settings import *
 
-SECRET_KEY: str = "4um$bpelz!^&$wsrl8it%$^9c7uy1cq)==4#k*e=2d^jnj761f"
+
+
+FORCE_SCRIPT_NAME: str = "/pacer-dashboard"
+STATIC_URL = f"{FORCE_SCRIPT_NAME}/static/"
+LOGIN_URL = f"{FORCE_SCRIPT_NAME}/login/"
+LOGIN_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/"
+LOGOUT_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/"
+
+
+SECRET_KEY: str = os.getenv("SECRET_KEY")
 
 ALLOWED_HOSTS: list = ["*"]
