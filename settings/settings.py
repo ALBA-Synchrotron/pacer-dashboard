@@ -11,9 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
-from urllib.parse import quote, urlunparse
-
-from django.utils.safestring import mark_safe
+from urllib.parse import quote
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -188,12 +186,12 @@ SECRET_KEY: str = os.getenv("SECRET_KEY", "8snh6_#tk+l=*n#ni@prha&^_kt13da@&64tk
 # WEBSOCKET CONFIG
 WEBSOCKET_DEFAULT_ROOM_NAME = "messages"
 
-WEBSOCKETS_RMQ_HOST: str = os.getenv("WEBSOCKETS_RMQ_HOST", "")
-WEBSOCKETS_RMQ_PORT: int = os.getenv("WEBSOCKETS_RMQ_PORT", 0)
-WEBSOCKETS_RMQ_USER: str = os.getenv("WEBSOCKETS_RMQ_USER", "")
-WEBSOCKETS_RMQ_PASS: str = os.getenv("WEBSOCKETS_RMQ_PASS", "")
-WEBSOCKETS_RMQ_VHOST: str = os.getenv("WEBSOCKETS_RMQ_VHOST", "/")
-WEBSOCKETS_RMQ_PROTOCOL: str = os.getenv("WEBSOCKETS_RMQ_PROTOCOL", "amqp")
+WEBSOCKETS_RMQ_HOST: str = quote(os.getenv("WEBSOCKETS_RMQ_HOST", os.getenv("RMQ_HOST", "")))
+WEBSOCKETS_RMQ_PORT: int = os.getenv("WEBSOCKETS_RMQ_PORT", os.getenv("RMQ_PORT", 5672))
+WEBSOCKETS_RMQ_USER: str = quote(os.getenv("WEBSOCKETS_RMQ_USER", os.getenv("RMQ_USERNAME", "")))
+WEBSOCKETS_RMQ_PASS: str = quote(os.getenv("WEBSOCKETS_RMQ_PASS", os.getenv("RMQ_PASSWORD", "")), safe="")
+WEBSOCKETS_RMQ_VHOST: str = quote(os.getenv("WEBSOCKETS_RMQ_VHOST", os.getenv("RMQ_VHOST", "/")))
+WEBSOCKETS_RMQ_PROTOCOL: str = os.getenv("WEBSOCKETS_RMQ_PROTOCOL", os.getenv("RMQ_PROTOCOL", "amqp"))
 
 WEBSOCKETS_BROKER_URL: str = f"{WEBSOCKETS_RMQ_PROTOCOL}://{WEBSOCKETS_RMQ_USER}:{WEBSOCKETS_RMQ_PASS}@{WEBSOCKETS_RMQ_HOST}:{WEBSOCKETS_RMQ_PORT}/{WEBSOCKETS_RMQ_VHOST}"
 
@@ -206,3 +204,5 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+TESTING_MODE: bool = False

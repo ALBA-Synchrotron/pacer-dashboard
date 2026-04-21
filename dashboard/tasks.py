@@ -40,33 +40,33 @@ def log_pacer_message(object_identifiers: dict, processing_start: str, processin
         msg = Message.objects.create(**msg_defaults)
 
     # WEBSOCKET NEW MESSAGE EVENT
+    if not settings.TESTING_MODE:
+        # channels-rabbitmq lib driver requires a persistent event loop running before initializing and does not support
+        # async_to_sync the way channels-redis does.
+        # Since this is executed in a celery synchronous worker, using asyncio.run would create a new eventloop each time a
+        # message arrives, which triggers a RuntimeError because the connection is bound to the first event loop it saw.
+        # We can solve this by using a singleton-like approach to reuse the same loop across all tasks within the same
+        # worker process.
+        def get_worker_loop():
+            global _loop
+            if _loop is None or _loop.is_closed():
+                try:
+                    _loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    _loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(_loop)
+            return _loop
 
-    # channels-rabbitmq lib driver requires a persistent event loop running before initializing and does not support
-    # async_to_sync the way channels-redis does.
-    # Since this is executed in a celery synchronous worker, using asyncio.run would create a new eventloop each time a
-    # message arrives, which triggers a RuntimeError because the connection is bound to the first event loop it saw.
-    # We can solve this by using a singleton-like approach to reuse the same loop across all tasks within the same
-    # worker process.
-    def get_worker_loop():
-        global _loop
-        if _loop is None or _loop.is_closed():
-            try:
-                _loop = asyncio.get_event_loop()
-            except RuntimeError:
-                _loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(_loop)
-        return _loop
+        async def send_to_channel():
+            channel_layer = get_channel_layer()
+            await channel_layer.group_send(
+                f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room",
+                {
+                    "type": "new_message", # replace the caller underscores [_] for dots [.]
+                    "message_id": msg.id,
+                }
+            )
 
-    async def send_to_channel():
-        channel_layer = get_channel_layer()
-        await channel_layer.group_send(
-            f"{settings.WEBSOCKET_DEFAULT_ROOM_NAME}_room",
-            {
-                "type": "new.message", # replace the caller underscores [_] for dots [.]
-                "message_id": msg.id,
-            }
-        )
-
-    # Use async_to_sync(send_to_channel()) if using Redis.
-    loop = get_worker_loop()
-    loop.run_until_complete(send_to_channel())
+        # Use async_to_sync(send_to_channel()) if using Redis.
+        loop = get_worker_loop()
+        loop.run_until_complete(send_to_channel())

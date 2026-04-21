@@ -25,8 +25,8 @@ class SimplePaNOSCClient:
                                           **({"auth": basic_auth} if self.username and self.password else {}))
         return resp
 
-    def item_exists(self, investigation_name: str) -> bool:
-        url: str = f"{self.url}/items/{investigation_name}"
+    def item_exists(self, pss_id: str) -> bool:
+        url: str = f"{self.url}/items/{pss_id}"
         resp: Response = self.__generic_pss_call(url=url, method="GET")
 
         return resp.status_code == 200

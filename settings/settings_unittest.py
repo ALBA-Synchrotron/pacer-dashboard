@@ -26,4 +26,3 @@ CHANNEL_LAYERS: dict = {
     }
 }
 
-
