@@ -10,15 +10,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
-</head>
-{% include 'navbar.html' %}
+    <style>
+        .msg-card-animate {
+            transition: all 0.6s ease-in-out;
+            display: grid;
+            grid-template-rows: 1fr;
+            opacity: 1;
+            margin-bottom: 1em;
 
+            @starting-style {
+                grid-template-rows: 0fr;
+                opacity: 0;
+                margin-bottom: 0;
+            }
+        }
+
+        .msg-card-animate > div {
+            overflow: hidden;
+        }
+    </style>
+</head>
+{% include "navbar.html" %}
 <body>
 <div class="drawer">
     <input id="filters-drawer" type="checkbox" class="drawer-toggle"/>
     <div class="drawer-content">
-        <span hx-get="{% app_subpath %}/tmpl/messages" hx-trigger="load" hx-target="#message-results">
-        </span>
+        <div hx-get="{% app_subpath %}/tmpl/messages"
+              hx-trigger="load"
+              hx-target="#message-results"
+              hx-indicator="#loading-spinner"
+        ></div>
+        <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
+            <span class="loading loading-dots loading-lg text-primary"></span>
+        </div>
         <div class="container mx-auto" style="margin-top: 1em">
             {% if not user.is_authenticated %}
                 {% if not DISABLED_AUTH %}
@@ -34,12 +58,12 @@
             {% endif %}
             <span id="message-results"></span>
         </div>
-        {% include 'footer.html' %}
+        {% include "footer.html" %}
     </div>
     <div class="drawer-side">
         <label for="filters-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
         <ul class="menu bg-base-200 min-h-full w-80 p-4">
-            {% include 'sidebar_drawer.html' %}
+            {% include "sidebar_drawer.html" %}
         </ul>
     </div>
 </div>
@@ -51,4 +75,38 @@
         integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@hiseb/confetti@2.1.0/dist/confetti.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
+<script>
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const messagesRoomName = "messages";
+    const socketUrl = `${protocol}://${window.location.host}/ws/${messagesRoomName}/`;
+
+    const rws = new ReconnectingWebSocket(socketUrl);
+
+    rws.timeoutInterval = 3000;
+    rws.maxReconnectInterval = 10000;
+
+    rws.onopen = function (e) {
+       console.log("Connected to Messages WebSocket, welcome");
+    };
+
+    rws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const msgId = data.message_id;
+        console.log("New event received: ", msgId);
+        htmx.ajax('GET', '{% app_subpath %}/tmpl/messages/' + msgId, {
+            target: '#message-results',
+            swap: 'afterbegin',
+        });
+    };
+
+    rws.onclose = function(e) {
+        // reconnecting-websocket lib will automatically try to reconnect
+        console.warn("Messages Websocket closed. Reconnecting...");
+    };
+
+    rws.onerror = function(err) {
+        console.error("Messages WebSocket Error: ", err);
+    };
+</script>
 </html>

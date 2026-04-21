@@ -24,6 +24,7 @@ LOCAL_APPS: list = [
 ]
 
 DJANGO_APPS: list = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -36,7 +37,7 @@ DJANGO_APPS: list = [
 THIRD_PARTY_APPS: list = [
     "social_django",
     "psqlextra",
-    "rest_framework"
+    "rest_framework",
 ]
 
 INSTALLED_APPS: list = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -75,6 +76,7 @@ TEMPLATES: list = [
 ]
 
 WSGI_APPLICATION: str = "settings.wsgi.application"
+ASGI_APPLICATION = "settings.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -121,9 +123,9 @@ STATIC_URL: str = "/static/"
 STATIC_ROOT: str = "./static/"
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
 
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 DISABLED_AUTH: bool = False
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
@@ -139,7 +141,6 @@ RABBITMQ_BROKER_SETTINGS: dict = {
     "username": quote(os.getenv("RMQ_USERNAME", "pacer-dashboard")),
     "password": quote(os.getenv("RMQ_PASSWORD", "<PASSWORD>")),
     "vhost": os.getenv("RMQ_VHOST", "/")
-
 }
 
 ICAT_AUTH: dict = {
@@ -162,7 +163,7 @@ PACER_INV_OPERATION_PANOSC_ITEM: str = "create-panosc-item"
 PACER_RMQ_HOST: str = os.getenv("RMQ_HOST", "")
 PACER_RMQ_PORT: int = os.getenv("RMQ_PORT", 0)
 PACER_RMQ_USERNAME: str = os.getenv("RMQ_USERNAME", "")
-PACER_RMQ_PASSWORD: str = os.getenv("RMQ_PASSWORD", "")
+PACER_RMQ_PASSWORD: str = (os.getenv("RMQ_PASSWORD", ""))
 PACER_RMQ_VIRTUAL_HOST: str = os.getenv("RMQ_VHOST", "/")
 PACER_RMQ_PROTOCOL: str = os.getenv("RMQ_PROTOCOL", "amqp")
 
@@ -172,12 +173,36 @@ PACER_INVESTIGATION_OPS_ROUTING_KEY: str = "investigation.ops"
 CELERY_TIMEZONE: str = TIME_ZONE
 CELERY_ACCEPT_CONTENT: list = ["application/json"]
 CELERY_TASK_TIME_LIMIT: int = 30 * 60
-CELERY_BROKER_URL: str = f"{RABBITMQ_BROKER_SETTINGS.get('protocol')}://"
-CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get('username')}:{RABBITMQ_BROKER_SETTINGS.get('password')}@" if RABBITMQ_BROKER_SETTINGS.get(
+CELERY_BROKER_URL: str = f"{RABBITMQ_BROKER_SETTINGS.get("protocol")}://"
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("username")}:{RABBITMQ_BROKER_SETTINGS.get("password")}@" if RABBITMQ_BROKER_SETTINGS.get(
     "username") and RABBITMQ_BROKER_SETTINGS.get("password") else CELERY_BROKER_URL
-CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get('host')}:{RABBITMQ_BROKER_SETTINGS.get('port')}" if RABBITMQ_BROKER_SETTINGS.get(
-    "port") else f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get('host')}"
-CELERY_BROKER_URL = f"{CELERY_BROKER_URL}/{RABBITMQ_BROKER_SETTINGS.get('vhost')}" if RABBITMQ_BROKER_SETTINGS.get(
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("host")}:{RABBITMQ_BROKER_SETTINGS.get("port")}" if RABBITMQ_BROKER_SETTINGS.get(
+    "port") else f"{CELERY_BROKER_URL}{RABBITMQ_BROKER_SETTINGS.get("host")}"
+CELERY_BROKER_URL = f"{CELERY_BROKER_URL}/{RABBITMQ_BROKER_SETTINGS.get("vhost")}" if RABBITMQ_BROKER_SETTINGS.get(
     "vhost") else CELERY_BROKER_URL
 
 SECRET_KEY: str = os.getenv("SECRET_KEY", "8snh6_#tk+l=*n#ni@prha&^_kt13da@&64tk&6l@8gn!fppxv")
+
+# WEBSOCKET CONFIG
+WEBSOCKET_DEFAULT_ROOM_NAME = "messages"
+
+WEBSOCKETS_RMQ_HOST: str = quote(os.getenv("WEBSOCKETS_RMQ_HOST", os.getenv("RMQ_HOST", "")))
+WEBSOCKETS_RMQ_PORT: int = os.getenv("WEBSOCKETS_RMQ_PORT", os.getenv("RMQ_PORT", 5672))
+WEBSOCKETS_RMQ_USER: str = quote(os.getenv("WEBSOCKETS_RMQ_USER", os.getenv("RMQ_USERNAME", "")))
+WEBSOCKETS_RMQ_PASS: str = quote(os.getenv("WEBSOCKETS_RMQ_PASS", os.getenv("RMQ_PASSWORD", "")), safe="")
+WEBSOCKETS_RMQ_VHOST: str = quote(os.getenv("WEBSOCKETS_RMQ_VHOST", os.getenv("RMQ_VHOST", "/")))
+WEBSOCKETS_RMQ_PROTOCOL: str = os.getenv("WEBSOCKETS_RMQ_PROTOCOL", os.getenv("RMQ_PROTOCOL", "amqp"))
+
+WEBSOCKETS_BROKER_URL: str = f"{WEBSOCKETS_RMQ_PROTOCOL}://{WEBSOCKETS_RMQ_USER}:{WEBSOCKETS_RMQ_PASS}@{WEBSOCKETS_RMQ_HOST}:{WEBSOCKETS_RMQ_PORT}/{WEBSOCKETS_RMQ_VHOST}"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_rabbitmq.core.RabbitmqChannelLayer",
+        "CONFIG": {
+            "host": WEBSOCKETS_BROKER_URL,
+            "expiry": 60,
+        },
+    },
+}
+
+TESTING_MODE: bool = False

@@ -94,9 +94,6 @@ class GenericTestCase(TestCase):
         default_password = '12345'
         try:
             user = User.objects.get(username=username)
-            if not user.profile:
-                profile = self.create_profile_associated(username)
-                user.profile = profile
         except Exception as e:
 
             user = User.objects.create_user(username=username, email=f'{username}{self.email_domain}')
