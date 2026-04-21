@@ -8,7 +8,7 @@ class MessageConsumerTests(TransactionTestCase):
 
     def test_message_reaches_client_from_group(self):
         async def run_test():
-            communicator = WebsocketCommunicator(application, "s/ws/messages/")
+            communicator = WebsocketCommunicator(application, "ws/messages/")
             connected, _ = await communicator.connect()
             self.assertTrue(connected)
 
