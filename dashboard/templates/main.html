@@ -80,7 +80,7 @@
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const messagesRoomName = "messages";
     const appContextPath = "{% app_subpath %}";
-    const socketUrl = `${protocol}://${window.location.host}${appContextPath}/ws/${messagesRoomName}/`;
+    const socketUrl = `${protocol}://${window.location.host}${appContextPath}/s/ws/${messagesRoomName}/`;
 
 
     const rws = new ReconnectingWebSocket(socketUrl);
