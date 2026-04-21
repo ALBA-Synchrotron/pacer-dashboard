@@ -20,3 +20,9 @@ DATABASES: dict = {
     }
 }
 
+CHANNEL_LAYERS: dict = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
