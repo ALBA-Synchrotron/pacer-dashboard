@@ -1,6 +1,7 @@
 from .settings import *
 
 FORCE_SCRIPT_NAME: str = "/pacer-dashboard"
+SOCKETS_CONTEXT_PATH: str = "/s"
 STATIC_URL: str = f"{FORCE_SCRIPT_NAME}/static/"
 LOGIN_URL = f"{FORCE_SCRIPT_NAME}/login/"
 LOGIN_REDIRECT_URL = f"{FORCE_SCRIPT_NAME}/"
