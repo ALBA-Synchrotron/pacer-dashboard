@@ -35,6 +35,12 @@ def app_subpath() -> str:
         return ""
     return settings.FORCE_SCRIPT_NAME
 
+@register.simple_tag
+def sockets_subpath() -> str:
+    if not settings.SOCKETS_CONTEXT_PATH:
+        return ""
+    return settings.SOCKETS_CONTEXT_PATH
+
 @register.filter
 def pretty_xml(value) -> str:
     try:
