@@ -33,12 +33,7 @@ class GroupProfile(models.Model):
 
         profiles = [i.groupprofile for i in user.groups.select_related("groupprofile").all() if hasattr(i, "groupprofile")]
 
-        allowed_msg_types = {
-            mt.strip()
-            for profile in profiles
-            if profile.groupprofile.allowed_message_types
-            for mt in profile.groupprofile.allowed_message_types.split(",")
-        }
+        allowed_msg_types = {mt.strip() for profile in profiles if profile.allowed_message_types for mt in profile.allowed_message_types.split(",")}
 
         if not allowed_msg_types:
             msg_types = list(
