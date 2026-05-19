@@ -20,22 +20,30 @@
         </label>
         <label for="filters-drawer" class="btn drawer-button">Filters</label>
     </div>
-    {% if not user.is_authenticated %}
-        {% if not DISABLED_AUTH %}
-            <div class="flex-none">
-                <a href="{% url "sso_login" %}" class="btn btn-square btn-ghost">
-                    Login
+    <div class="flex-none">
+    </div>
+    <ul class="menu menu-horizontal px-1">
+        <li>
+            <div style="margin-right: 0.5em; margin-top: -0.4em;">
+                <a class="btn btn-outline" id="theme-toggle-btn">
+                    {% include "theme_toggle.html" %}
                 </a>
             </div>
-        {% endif %}
-    {% else %}
-        <div class="flex-none">
+        </li>
+        <li>{% if not user.is_authenticated %}
+            {% if not DISABLED_AUTH %}
+                <a href="{% url "sso_login" %}" class="btn btn btn-outline btn-primary">
+                    Login
+                </a>
+            {% endif %}
+        {% else %}
             <a href="{% url "sso_logout" %}"
-               class="btn btn-square btn-ghost">
+               class="btn btn btn-outline btn-error">
                 Logout
             </a>
-        </div>
-    {% endif %}
+        {% endif %}</li>
+    </ul>
+
 </div>
 
 

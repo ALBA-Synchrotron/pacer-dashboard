@@ -1,0 +1,17 @@
+.msg-card-animate {
+    transition: all 0.6s ease-in-out;
+    display: grid;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-bottom: 1em;
+
+    @starting-style {
+        grid-template-rows: 0fr;
+        opacity: 0;
+        margin-bottom: 0;
+    }
+}
+
+.msg-card-animate > .card-body {
+    overflow: hidden;
+}
