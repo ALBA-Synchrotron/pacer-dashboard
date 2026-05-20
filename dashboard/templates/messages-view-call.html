@@ -1,0 +1,6 @@
+{% load tags %}
+hx-get="{% app_subpath %}/tmpl/messages"
+hx-trigger="change"
+hx-target="#message-results"
+hx-include="#msg-filters-form, #general-text-search"
+hx-indicator="#loading-spinner"

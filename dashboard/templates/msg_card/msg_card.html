@@ -104,7 +104,7 @@
     </div>
     {% if msg_page_obj.has_next and forloop.last %}
         <span
-                hx-get={% app_subpath %}/tmpl/messages?page={{ msg_page_obj.next_page_number }}"
+                hx-get="{% app_subpath %}/tmpl/messages?page={{ msg_page_obj.next_page_number }}"
                 hx-swap="beforeend"
                 hx-target="#message-results"
                 hx-select=".msg-card"

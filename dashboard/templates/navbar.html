@@ -1,9 +1,16 @@
+{% load tags %}
 {% load static %}
 <div class="navbar bg-base-100 rounded shadow-sm border border-base-300 mx-auto px-4 container sticky top-4 z-50 rounded-xl">
     <div class="flex-1">
-        <div class="grid grid-flow-col grid-rows-2 gap-0">
+        <div class="grid grid-flow-col grid-rows-2 gap-2">
             <div class="row-span-2">
-                <a class="btn btn-ghost text-xl" hx-on:click="confetti()"><i class="fa-solid fa-magnifying-glass-chart logo-icon"></i>PACER dashboard</a>
+                <a class="btn btn-ghost text-xl" hx-on:click="confetti()"><i
+                        class="fa-solid fa-magnifying-glass-chart logo-icon"></i>PACER dashboard</a>
+            </div>
+        </div>
+        <div class="grid grid-flow-col grid-rows-2 gap-2">
+            <div class="row-span-2 flex flex-col justify-end text-sm" style="margin-top: 4em" hx-swap-oob="true">
+                <span id="total-msgs-count"></span>
             </div>
         </div>
     </div>
@@ -12,15 +19,23 @@
             <div class="row-span-1 col-span-2">
                 <label class="input general-text-search rounded-xl">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="search" required placeholder="Search" id="general-text-search"/>
+                    <input type="search" required name="general-search" id="general-text-search"
+                           placeholder="Search by investigation, instrument, ..."
+                            {% include "messages-view-call.html" %}
+                    />
                 </label>
             </div>
             <div class="row-span-1 col-span-2">
-                <form>
+                <form id="msg-filters-form" class="flex flex-wrap gap-1" style="margin-top: -0.75em">
                     {% for msg_type in message_types %}
-                        <input class="btn btn-sm rounded-xl" type="checkbox" name="msg-filters" aria-label="{{ msg_type }}"/>
+                        <input class="btn btn-sm rounded-xl" type="checkbox" name="msg-filters"
+                               aria-label="{{ msg_type }}"
+                               value="{{ msg_type }}"
+                                {% include "messages-view-call.html" %}
+                        />
                     {% endfor %}
-                    <button class="btn btn-sm btn-square rounded-xl" type="reset" aria-label="Clear filters">
+                    <button class="btn btn-sm btn-square rounded-xl" type="reset" aria-label="Clear filters"
+                    >
                         <i class="fa-solid fa-x"></i>
                     </button>
                 </form>
@@ -28,26 +43,30 @@
         </div>
     </div>
     <div class="flex-none">
-        <ul class="menu menu-horizontal px-1">
-            <li>
-                <div style="margin-right: 0.5em; margin-top: -0.4em;">
-                    {% include "theme_toggle.html" %}
-                </div>
-            </li>
-            {% if not DISABLED_AUTH %}
-                <li>{% if not user.is_authenticated %}
-                    <a href="{% url "sso_login" %}" class="btn btn-outline btn-primary btn-xs rounded-xl">
-                        Login
-                    </a>
-                {% else %}
-                    <a href="{% url "sso_logout" %}"
-                       class="btn btn-outline btn-error rounded-xl">
-                        Logout
-                    </a>
-                {% endif %}
-                </li>
-            {% endif %}
-        </ul>
+        <div class="grid grid-flow-col grid-rows-2 gap-1" style="max-width: 50em">
+            <div class="row-span-1 col-span-2">
+                <ul class="menu menu-horizontal px-1">
+                    <li>
+                        <div style="margin-right: 0.5em; margin-top: -0.4em;">
+                            {% include "theme_toggle.html" %}
+                        </div>
+                    </li>
+                    {% if not DISABLED_AUTH %}
+                        <li>{% if not user.is_authenticated %}
+                            <a href="{% url "sso_login" %}" class="btn btn-outline btn-primary btn-sm rounded-xl">
+                                Login
+                            </a>
+                        {% else %}
+                            <a href="{% url "sso_logout" %}"
+                               class="btn btn-outline btn-error btn-sm rounded-xl">
+                                Logout
+                            </a>
+                        {% endif %}
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 
