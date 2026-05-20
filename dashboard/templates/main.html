@@ -1,6 +1,6 @@
 {% load tags %}
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>PACER dashboard</title>
@@ -10,11 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link id="hljs-theme-light"
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/brogrammer.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
 </head>
-{% include "navbar.html" %}
 <body>
-
+{% include "navbar.html" %}
 <div hx-get="{% app_subpath %}/tmpl/messages"
      hx-trigger="load"
      hx-target="#message-results"
@@ -23,16 +25,16 @@
 <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
     <span class="loading loading-dots loading-lg text-primary"></span>
 </div>
-<div class="container mx-auto" style="margin-top: 1em">
+<div class="container mx-auto">
     {% if not user.is_authenticated %}
         {% if not DISABLED_AUTH %}
-            <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
+            <div role="alert" class="alert alert-warning alert-soft rounded-xl font-bold" style="margin-bottom: 1.5em">
                 <span>You aren't logged in. Authenticate to view full details of the messages.</span>
             </div>
         {% endif %}
     {% endif %}
     {% if user.groups.count == 0  and user.is_authenticated %}
-        <div role="alert" class="alert alert-info alert-dash" style="margin-bottom: 1.5em">
+        <div role="alert" class="alert alert-warning alert-soft rounded-xl font-bold" style="margin-bottom: 1.5em">
             <span>You aren't assigned to any group. Ask MIS to have your user assigned to a group to view full details of the messages.</span>
         </div>
     {% endif %}
@@ -49,6 +51,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@hiseb/confetti@2.1.0/dist/confetti.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
 <script src="{% static 'js/ws.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 </html>

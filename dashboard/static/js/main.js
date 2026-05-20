@@ -1,63 +1,52 @@
-// Cookie helper functions
-function setCookie(name, value, days) {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const themeController = document.querySelector('.theme-controller');
+    const THEME_STORAGE_KEY = 'preferred-theme';
 
-function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
+    // Load theme on page load
+    function loadTheme() {
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
-function setTheme(theme) {
-    const html = document.querySelector("html");
-    html.setAttribute("data-theme", theme);
-
-    const checkbox = document.querySelector("#theme-indicator input[type='checkbox']");
-    if (checkbox) {
-        checkbox.checked = theme === "light";
+        if (savedTheme) {
+            // Load from localStorage if available
+            applyTheme(savedTheme);
+        } else {
+            // Default to system preference
+            const prefersabyss = window.matchMedia('(prefers-color-scheme: abyss)').matches;
+            const systemTheme = prefersabyss ? 'abyss' : 'light';
+            applyTheme(systemTheme);
+        }
     }
 
-    // Save to cookie
-    setCookie("theme", theme, 365);
-}
-
-function toggleTheme() {
-    const html = document.querySelector("html");
-    const currentTheme = html.getAttribute("data-theme");
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-}
-
-// Initialize theme on page load
-(function initTheme() {
-    const savedTheme = getCookie("theme");
-
-    if (savedTheme) {
-        // Use saved theme from cookie
-        setTheme(savedTheme);
-    } else {
-        // Use system preference
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const theme = prefersDark ? "dark" : "light";
-        setTheme(theme);
+    // Apply theme to the document and update checkbox
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (themeController) {
+            themeController.checked = (theme === 'abyss');
+        }
     }
-})();
 
-$("#theme-toggle-btn").on("click", function (e) {
-    e.preventDefault();
-    toggleTheme();
+    // Save theme when controller is changed
+    if (themeController) {
+        themeController.addEventListener('change', function () {
+            const selectedTheme = this.checked ? 'abyss' : 'light';
+            localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+            applyTheme(selectedTheme);
+        });
+    }
+
+    // Initialize theme
+    loadTheme();
 });
 
-$("#theme-indicator, #theme-indicator *").on("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleTheme();
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("pre code.hljs-target:not(.hljs)").forEach(el => {
+        hljs.highlightElement(el);
+    });
+});
+
+// Re-run after HTMX swaps (your msg cards are loaded via hx-get)
+document.body.addEventListener("htmx:afterSwap", (evt) => {
+    evt.target.querySelectorAll("pre code.hljs-target:not(.hljs)").forEach(el => {
+        hljs.highlightElement(el);
+    });
 });
