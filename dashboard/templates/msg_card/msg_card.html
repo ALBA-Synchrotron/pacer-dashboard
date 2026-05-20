@@ -24,13 +24,15 @@
                         <h2 class="font-semibold text-md">Hash</h2>
                         <div class="text-md tracking-wide text-base-content/50 msg-property-value font-bold"
                         ><span style="color: var(--color-alba-new-blue)">{{ msg.hash|shorten_hash }}</span>
-                            <i class="fa-regular fa-copy transition copy-icon" onclick="navigator.clipboard.writeText('{{ msg.hash|shorten_hash }}')"
+                            <i class="fa-regular fa-copy transition copy-icon"
+                               onclick="navigator.clipboard.writeText('{{ msg.hash|shorten_hash }}')"
                             ></i></div>
                     </div>
                     <div class="leading-none">
                         <h2 class="font-semibold text-md">Message type</h2>
                         <div class="badge badge-soft badge-info badge-card text-slate-800"
-                        style="background-color: {{ msg.message_type|badge_bg }}; color: {{ msg.message_type|badge_text }}"><b>{{ msg.message_type }}</b></div>
+                             style="background-color: {{ msg.message_type|badge_bg }}; color: {{ msg.message_type|badge_text }}">
+                            <b>{{ msg.message_type }}</b></div>
                     </div>
                     <div class="leading-none">
                         <h2 class="font-semibold text-md">Exchange name</h2>
@@ -55,16 +57,18 @@
                 </div>
             </div>
             <div class="divider card-divider divider-horizontal"></div>
-            <div class="card rounded-box grid h-20 grow place-items-left payload-container">
+            <div class="card rounded-box grid h-20 grow place-items-left bg-base-500 payload-container">
                 {% if user.is_authenticated and user.groups.count != 0 or DISABLED_AUTH %}
                     <span>
                         {% if user.is_authenticated and user.groups.count != 0 or DISABLED_AUTH %}
                             {% if msg.payload_format == "json" %}
-                                <pre class="payload-pre"><code class="hljs-target language-json">{{ msg.payload }}</code></pre>
+                                <pre class="payload-pre"><code
+                                        class="hljs-target language-json">{{ msg.payload }}</code></pre>
                             {% elif msg.payload_format == "xml" %}
                                 <pre class="payload-pre"><code class="hljs-target language-xml">{{ msg.payload }}</code></pre>
                             {% else %}
-                                <pre class="payload-pre"><code class="hljs-target language-plaintext">{{ msg.payload }}</code></pre>
+                                <pre class="payload-pre"><code
+                                        class="hljs-target language-plaintext">{{ msg.payload }}</code></pre>
                             {% endif %}
                         {% else %}
                             <div class="flex w-52 flex-col gap-4">
@@ -103,13 +107,15 @@
         {% endif %}
     </div>
     {% if msg_page_obj.has_next and forloop.last %}
-        <span
-                hx-get="{% app_subpath %}/tmpl/messages?page={{ msg_page_obj.next_page_number }}"
-                hx-swap="beforeend"
-                hx-target="#message-results"
-                hx-select=".msg-card"
-                hx-trigger="revealed"
-        >
-        </span>
+        {% app_subpath as subpath %}
+        {% with next_url=subpath|add:"/tmpl/messages?page="|add:msg_page_obj.next_page_number|stringformat:"s" %}
+
+            <span
+                    hx-swap="beforeend"
+                    hx-select=".msg-card"
+                    {% include "messages-view-call.html" with htmx_trigger="revealed" hx_get=next_url %}
+            >
+        {% endwith %}
+    </span>
     {% endif %}
 </div>
