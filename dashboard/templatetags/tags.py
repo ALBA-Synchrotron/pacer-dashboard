@@ -1,3 +1,4 @@
+import hashlib
 import json
 import xml
 
@@ -24,7 +25,7 @@ def shorten_hash(value: str) -> str:
 def pretty_json(value) -> str:
     try:
         parsed = json.loads(value)
-        return json.dumps(parsed, indent=4, ensure_ascii=False)
+        return json.dumps(parsed, indent=2, ensure_ascii=False)
     except Exception:
         return value
 
@@ -50,3 +51,18 @@ def pretty_xml(value) -> str:
         return pretty
     except Exception:
         return value
+
+def stable_hash(s: str) -> int:
+    return int(hashlib.md5(s.encode("utf-8")).hexdigest(), 16)
+
+@register.filter
+def badge_bg(name: str) -> str:
+    h = stable_hash(name)
+    hue = h % 360
+    return f"hsl({hue} 55% 88%)"
+
+@register.filter
+def badge_text(name: str) -> str:
+    h = stable_hash(name)
+    hue = h % 360
+    return f"hsl({hue} 70% 35%)"
