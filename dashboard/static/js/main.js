@@ -50,3 +50,4 @@ document.body.addEventListener("htmx:afterSwap", (evt) => {
         hljs.highlightElement(el);
     });
 });
+

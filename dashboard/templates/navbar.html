@@ -48,6 +48,14 @@
         <div class="grid grid-flow-col grid-rows-2 gap-1" style="max-width: 50em">
             <div class="row-span-1 col-span-2">
                 <ul class="menu menu-horizontal px-1">
+                <li>
+                    <label class="label">
+                        <input type="checkbox" hx-on:change="toggleWS()"
+                               checked class="toggle toggle-success" name="live-enabled" id="live-enabled"
+                                />
+                        Stream live
+                    </label>
+                </li>
                     <li>
                         <div style="margin-right: 0.5em; margin-top: -0.4em;">
                             {% include "theme_toggle.html" %}
