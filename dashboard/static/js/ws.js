@@ -1,10 +1,3 @@
-const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-const messagesRoomName = "messages";
-const appContextPath = "{% app_subpath %}";
-const socketsContextPath = "{% sockets_subpath %}";
-const socketUrl = `${protocol}://${window.location.host}${appContextPath}${socketsContextPath}/ws/${messagesRoomName}/`;
-
-
 const rws = new ReconnectingWebSocket(socketUrl);
 
 rws.timeoutInterval = 3000;
@@ -17,9 +10,10 @@ rws.onopen = function (e) {
 rws.onmessage = function (e) {
     const data = JSON.parse(e.data);
     const msgId = data.message_id;
-    htmx.ajax('GET', '{% app_subpath %}/tmpl/messages/' + msgId, {
+    htmx.ajax('GET', messageFetchUrl + msgId, {
         target: '#message-results',
         swap: 'afterbegin',
+        source: '#general-text-search',
     });
 };
 
