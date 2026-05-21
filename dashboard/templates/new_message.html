@@ -1,3 +1,4 @@
 {% if msg %}
+    <span id="total-msgs-count" hx-swap-oob="true">Showing {{ current_msgs }} of {{ total_msgs }}</span>
     {% include "msg_card/msg_card.html" with msg=msg is_new=True%}
 {% endif %}

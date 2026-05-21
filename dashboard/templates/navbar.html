@@ -27,6 +27,8 @@
             </div>
             <div class="row-span-1 col-span-2">
                 <form id="msg-filters-form" class="flex flex-wrap gap-1" style="margin-top: -0.75em">
+                    <input type="hidden" id="current-page" name="current-page" aria-label="current-page" value="{{ current_page }}">
+                    <input type="hidden"  id="total-msgs" name="total-msgs" aria-label="total-msgs" value="{{ total_msgs }}">
                     {% for msg_type in message_types %}
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="msg-filters"
                                aria-label="{{ msg_type }}"

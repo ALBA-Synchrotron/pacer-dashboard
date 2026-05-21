@@ -42,7 +42,7 @@
                     <div class="leading-none">
                         <h2 class="font-semibold text-md">Routing key</h2>
                         <div class="text-md tracking-wide text-base-content/50 msg-property-value font-bold"
-                        >{{ msg.exchange_name }}</div>
+                        >{{ msg.routing_key }}</div>
                     </div>
                     <div class="leading-none">
                         <h2 class="font-semibold text-md">Processed at</h2>
@@ -65,7 +65,8 @@
                                 <pre class="payload-pre"><code
                                         class="hljs-target language-json">{{ msg.payload|pretty_json }}</code></pre>
                             {% elif msg.payload_format == "xml" %}
-                                <pre class="payload-pre"><code class="hljs-target language-xml">{{ msg.payload|pretty_xml }}</code></pre>
+                                <pre class="payload-pre"><code
+                                        class="hljs-target language-xml">{{ msg.payload|pretty_xml }}</code></pre>
                             {% else %}
                                 <pre class="payload-pre"><code
                                         class="hljs-target language-plaintext">{{ msg.payload }}</code></pre>
@@ -108,13 +109,14 @@
     </div>
     {% if msg_page_obj.has_next and forloop.last %}
         {% app_subpath as subpath %}
-        {% with next_url=subpath|add:"/tmpl/messages?page="|add:msg_page_obj.next_page_number|stringformat:"s" %}
-
-            <span
-                    hx-swap="beforeend"
-                    hx-select=".msg-card"
-                    {% include "messages-view-call.html" with htmx_trigger="revealed" hx_get=next_url %}
-            >
+        {% with page_num=msg_page_obj.next_page_number|stringformat:"s" %}
+            {% with next_url=subpath|add:"/tmpl/messages?page="|add:page_num %}
+                <span
+                        hx-swap="beforeend"
+                        hx-select=".msg-card"
+                        {% include "messages-view-call.html" with htmx_trigger="revealed" hx_get=next_url %}
+                >
+            {% endwith %}
         {% endwith %}
     </span>
     {% endif %}
