@@ -1,9 +1,7 @@
-
-
 let rws;
 
 function initWebSocket() {
-    if (!rws){
+    if (!rws) {
         rws = new ReconnectingWebSocket(socketUrl);
         rws.timeoutInterval = 3000;
         rws.maxReconnectInterval = 10000;
@@ -34,14 +32,16 @@ function initWebSocket() {
 }
 
 function toggleWS() {
-    if ( document.getElementById("live-enabled").checked) {
+    if (document.getElementById("live-enabled").checked) {
+        localStorage.setItem('live', 'true');
         initWebSocket();
-    }else{
+    } else {
         rws.close();
         rws = null;
+        localStorage.setItem('live', 'false');
     }
 }
 
-if(document.getElementById("live-enabled").checked){
+if (localStorage.getItem('live', 'true') !== null && localStorage.getItem('live', 'true') === "true") {
     initWebSocket()
 }

@@ -11,8 +11,8 @@
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
     <link id="hljs-theme-light"
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/brogrammer.min.css">
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/brogrammer.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
 </head>
 <body>
@@ -48,7 +48,9 @@
         crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@hiseb/confetti@2.1.0/dist/confetti.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/json.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
@@ -59,6 +61,11 @@
     const socketsContextPath = "{% sockets_subpath %}";
     const socketUrl = `${protocol}://${window.location.host}${appContextPath}${socketsContextPath}/ws/${messagesRoomName}/`;
     const messageFetchUrl = '{% app_subpath %}/tmpl/messages/';
+
+    let variableFilters = []
+    {% for msg_type in message_types %}
+        variableFilters.push({id: "{{ msg_type }}-toggle", key: "{{ msg_type }}"})
+    {% endfor %}
 </script>
 <script src="{% static 'js/ws.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>

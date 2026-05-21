@@ -2,22 +2,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const themeController = document.querySelector('.theme-controller');
     const THEME_STORAGE_KEY = 'preferred-theme';
 
-    // Load theme on page load
     function loadTheme() {
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
         if (savedTheme) {
-            // Load from localStorage if available
             applyTheme(savedTheme);
         } else {
-            // Default to system preference
             const prefersabyss = window.matchMedia('(prefers-color-scheme: abyss)').matches;
             const systemTheme = prefersabyss ? 'abyss' : 'light';
             applyTheme(systemTheme);
         }
     }
 
-    // Apply theme to the document and update checkbox
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         if (themeController) {
@@ -25,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Save theme when controller is changed
     if (themeController) {
         themeController.addEventListener('change', function () {
             const selectedTheme = this.checked ? 'abyss' : 'light';
@@ -34,9 +29,41 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Initialize theme
     loadTheme();
+    restoreFilters();
 });
+
+function restoreFilters() {
+    const filters = [
+        {
+            id: "xml-toggle",
+            key: "xml",
+        }, {
+            id: "json-toggle",
+            key: "json",
+        },
+        {
+            id: "live-enabled",
+            key: "live"
+        },
+        {
+            id: "errored-only-toggle",
+            key: "errored"
+        }, ...variableFilters
+    ]
+
+    for (const filter of filters) {
+        const filterElement = document.getElementById(filter.id);
+        if (filterElement && localStorage.getItem(filter.key) !== null) {
+            filterElement.checked = localStorage.getItem(filter.key) === "true";
+        }
+    }
+
+    const filterElement = document.getElementById("general-text-search");
+    if (filterElement && localStorage.getItem("search") !== null) {
+        filterElement.value = localStorage.getItem("search");
+    }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("pre code.hljs-target:not(.hljs)").forEach(el => {
@@ -44,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Re-run after HTMX swaps (your msg cards are loaded via hx-get)
 document.body.addEventListener("htmx:afterSwap", (evt) => {
     evt.target.querySelectorAll("pre code.hljs-target:not(.hljs)").forEach(el => {
         hljs.highlightElement(el);

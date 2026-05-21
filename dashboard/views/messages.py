@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 
 from dashboard.models import Message, GroupProfile
 
-MAX_MSG_PER_PAGE: int = 20
+MAX_MSG_PER_PAGE: int = 10
 
 
 def get_user_filters(request) -> Q:
@@ -27,7 +27,6 @@ def get_user_filters(request) -> Q:
 
 class MessagesView(TemplateView):
     template_name: str = "msg_results.html"
-    max_msg_page: int = 20
 
     def get_context_data(self, **kwargs) -> dict:
         context: dict = super().get_context_data(**kwargs)
