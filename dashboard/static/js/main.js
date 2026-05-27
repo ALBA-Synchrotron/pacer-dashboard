@@ -77,3 +77,19 @@ document.body.addEventListener("htmx:afterSwap", (evt) => {
     });
 });
 
+function dateRangeFilter(){
+    let selectedDateRange = $(document.getElementById("calendar-filter")).val();
+    $("#date-range-selection").text(selectedDateRange.replace('/', ' to '));
+    const [startDate, endDate] = selectedDateRange.split("/");
+    $("#startDate").val(startDate);
+    $("#endDate").val(endDate);
+}
+
+function resetDateRangeFilter(){
+    const calendar = document.getElementById("calendar-filter");
+    calendar.value = null;
+    $("#startDate").val("");
+    $("#endDate").val("");
+    calendar.dispatchEvent(new Event("change", { bubbles: true }));
+    $("#date-range-selection").text("Select date range");
+}

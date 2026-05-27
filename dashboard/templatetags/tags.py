@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 import xml
@@ -23,11 +24,23 @@ def shorten_hash(value: str) -> str:
 
 @register.filter
 def pretty_json(value) -> str:
-    try:
-        parsed = json.loads(value)
-        return json.dumps(parsed, indent=2, ensure_ascii=False)
-    except Exception:
-        return value
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, indent=2, ensure_ascii=False)
+
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return json.dumps(parsed, indent=2, ensure_ascii=False)
+        except json.JSONDecodeError:
+            pass
+
+        try:
+            parsed = ast.literal_eval(value)
+            return json.dumps(parsed, indent=2, ensure_ascii=False)
+        except (ValueError, SyntaxError):
+            return value
+
+    return str(value)
 
 
 @register.simple_tag
