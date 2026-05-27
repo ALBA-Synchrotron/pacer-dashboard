@@ -18,7 +18,7 @@
 <body>
 {% include "navbar.html" %}
 <div hx-get="{% app_subpath %}/tmpl/messages"
-        {% include "messages-view-call.html" with htmx_trigger="load" %}>
+        {% include "messages-view-call.html" with htmx_trigger="load delay:1ms" %}>
 </div>
 <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
     <span class="loading loading-dots loading-lg text-primary"></span>
