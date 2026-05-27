@@ -18,7 +18,7 @@
 <body>
 {% include "navbar.html" %}
 <div hx-get="{% app_subpath %}/tmpl/messages"
-        {% include "messages-view-call.html" with htmx_trigger="load" %}>
+        {% include "messages-view-call.html" with htmx_trigger="load delay:1ms" %}>
 </div>
 <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
     <span class="loading loading-dots loading-lg text-primary"></span>
@@ -54,6 +54,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/json.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
+<script type="module" src="https://unpkg.com/cally"></script>
 <script>
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const messagesRoomName = "messages";

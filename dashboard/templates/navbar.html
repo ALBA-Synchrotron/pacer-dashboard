@@ -9,7 +9,41 @@
             </div>
         </div>
         <div class="grid grid-flow-col grid-rows-2 gap-2">
-            <div class="row-span-2 flex flex-col justify-end text-sm" style="margin-top: 4em" hx-swap-oob="true">
+            <div class="row-span-2 flex flex-col justify-end text-sm" style="margin-top: 1em" hx-swap-oob="true">
+                <div class="justify-center" style="display: flex; align-items: center;">
+                    <button popovertarget="cally-popover1" class="input input-border rounded-xl" id="cally1"
+                            style="anchor-name:--cally1"><i class="fa-regular fa-calendar"></i>
+                        <span id="date-range-selection" class="text-center" style="width: 100%">Select date range</span>
+                    </button>
+                    <button hx-on:click="resetDateRangeFilter()" style="margin-left: -1.7em; z-index: 999">
+                        <i class="fa-solid fa-x"></i>
+                    </button>
+                </div>
+
+                <div popover id="cally-popover1" class="dropdown bg-base-100 rounded-box shadow-lg"
+                     style="position-anchor:--cally1">
+                    <calendar-range class="cally" id="calendar-filter"
+                                    hx-on:change="dateRangeFilter()"  {% include "messages-view-call.html" %}>
+                        <svg aria-label="Previous" class="fill-current size-4" slot="previous"
+                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M15.75 19.5 8.25 12l7.5-7.5"></path>
+                        </svg>
+                        <svg aria-label="Next" class="fill-current size-4" slot="next"
+                             xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24">
+                            <path d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                        </svg>
+                        <calendar-month></calendar-month>
+                    </calendar-range>
+                    <form id="date-filter-form">
+                        <input type="hidden" name="startDate" id="startDate">
+                        <input type="hidden" name="endDate" id="endDate">
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-flow-col grid-rows-2 gap-2">
+            <div class="row-span-2 flex flex-col justify-end text-sm" style="margin-top: 2em" hx-swap-oob="true">
                 <span id="total-msgs-count"></span>
             </div>
         </div>
@@ -28,8 +62,10 @@
             </div>
             <div class="row-span-1 col-span-2">
                 <form id="msg-filters-form" class="flex flex-wrap gap-1" style="margin-top: -0.75em">
-                    <input type="hidden" id="current-page" name="current-page" aria-label="current-page" value="{{ current_page }}">
-                    <input type="hidden"  id="total-msgs" name="total-msgs" aria-label="total-msgs" value="{{ total_msgs }}">
+                    <input type="hidden" id="current-page" name="current-page" aria-label="current-page"
+                           value="{{ current_page }}">
+                    <input type="hidden" id="total-msgs" name="total-msgs" aria-label="total-msgs"
+                           value="{{ total_msgs }}">
                     {% for msg_type in message_types %}
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="msg-filters"
                                aria-label="{{ msg_type }}" id="{{ msg_type }}-toggle"
@@ -54,14 +90,14 @@
         <div class="grid grid-flow-col grid-rows-2 gap-1" style="max-width: 50em">
             <div class="row-span-1 col-span-2">
                 <ul class="menu menu-horizontal px-1">
-                <li>
-                    <label class="label">
-                        <input type="checkbox" hx-on:change="toggleWS()"
-                               class="toggle toggle-success" name="live-enabled" id="live-enabled"
-                                />
-                        Stream live
-                    </label>
-                </li>
+                    <li>
+                        <label class="label">
+                            <input type="checkbox" hx-on:change="toggleWS()"
+                                   class="toggle toggle-success" name="live-enabled" id="live-enabled"
+                            />
+                            Stream live
+                        </label>
+                    </li>
                     <li>
                         <div style="margin-right: 0.5em; margin-top: -0.4em;">
                             {% include "theme_toggle.html" %}
@@ -86,10 +122,10 @@
                 <fieldset class="fieldset bg-base-100 rounded-box w-64 p-4">
                     <form id="payload-type-filters-form" class="flex flex-wrap gap-1" style="margin-top: -0.75em">
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="payload-type" id="xml-toggle"
-                                aria-label="XML" hx-on:input="localStorage.setItem('xml', this.checked)"
-                                value="XML"
-                            {% include "messages-view-call.html" %}
-                    />
+                               aria-label="XML" hx-on:input="localStorage.setItem('xml', this.checked)"
+                               value="XML"
+                                {% include "messages-view-call.html" %}
+                        />
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="payload-type" id="json-toggle"
                                aria-label="JSON" hx-on:input="localStorage.setItem('json', this.checked)"
                                value="JSON"
@@ -101,7 +137,8 @@
                             <i class="fa-solid fa-x"></i>
                         </button>
                         <label class="label">
-                            <input type="checkbox" class="toggle toggle-error" name="errored-only" id="errored-only-toggle"
+                            <input type="checkbox" class="toggle toggle-error" name="errored-only"
+                                   id="errored-only-toggle"
                                    hx-on:input="localStorage.setItem('errored', this.checked)"
                                     {% include "messages-view-call.html" %}/>
                             Show errored only
