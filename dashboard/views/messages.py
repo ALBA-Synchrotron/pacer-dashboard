@@ -13,6 +13,9 @@ def get_user_filters(request) -> Q:
     text_search: str = request.GET.get("general-search", "").strip()
     errored_only: bool = request.GET.get("errored-only", "off") == "on"
     payload_types: list = request.GET.getlist("payload-type")
+    start_date: str = request.GET.get("startDate", "")
+    end_date: str = request.GET.get("endDate", "")
+
 
     if message_type_filters:
         user_filter &= Q(message_type__in=message_type_filters)
@@ -22,6 +25,10 @@ def get_user_filters(request) -> Q:
         user_filter &= Q(errored=True)
     if payload_types:
         user_filter &= Q(payload_format__in=(i.lower() for i in payload_types))
+    if start_date:
+        user_filter &= Q(processing_start__gte=start_date)
+    if end_date:
+        user_filter &= Q(processing_start__lte=end_date)
     return user_filter
 
 
