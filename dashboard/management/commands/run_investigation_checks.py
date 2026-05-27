@@ -44,7 +44,7 @@ class Command(BaseCommand):
                                                             settings.PANOSC_AUTH.get("username"),
                                                             settings.PANOSC_AUTH.get("password"))
 
-        icat_search_filters: dict = {}
+        icat_search_filters: dict = {"type.name__not_in": ["INDUSTRIAL"]}
         inv_checks_filter: Q = (Q(has_doi=False) | Q(has_panosc_item=False)) & Q(
             check_retries__lt=settings.INVESTIGATION_CHECK_MAX_RETRIES)
 
@@ -71,11 +71,12 @@ class Command(BaseCommand):
                 return
             icat_search_filters["endDate__lte"] = end_date_since
 
-        investigations_empty_doi_icat: list = icat_client.search("Investigation", conditions={**icat_search_filters, "doi__eq": ""},
-                                                              flatten_single=False)
-        investigations_null_doi_icat: list = icat_client.search("Investigation",
-                                                                 conditions={**icat_search_filters, "doi__eq": None},
+        investigations_empty_doi_icat: list = icat_client.search("Investigation",
+                                                                 conditions={**icat_search_filters, "doi__eq": ""},
                                                                  flatten_single=False)
+        investigations_null_doi_icat: list = icat_client.search("Investigation",
+                                                                conditions={**icat_search_filters, "doi__eq": None},
+                                                                flatten_single=False)
 
         investigations_no_doi_icat: list = investigations_empty_doi_icat + investigations_null_doi_icat
         if not investigations_no_doi_icat:
@@ -92,7 +93,7 @@ class Command(BaseCommand):
 
             investigation: Entity = icat_client.search("Investigation",
                                                        conditions={"name__eq": inv_check.investigation,
-                                                                   "visitId__eq": inv_check.visit_id},)
+                                                                   "visitId__eq": inv_check.visit_id}, )
             if not investigation:
                 continue
 
@@ -123,7 +124,8 @@ class Command(BaseCommand):
                 inv_check.check_retries += 1
                 inv_check.save()
 
-            messages_for_pacer.append({"name": str(investigation.name), "visit_id": str(investigation.visitId), "operations": pacer_ops})
+            messages_for_pacer.append(
+                {"name": str(investigation.name), "visit_id": str(investigation.visitId), "operations": pacer_ops})
         icat_client.logout()
 
         GenericPublisher.send_messages_to_broker(messages_for_pacer, settings.PACER_INVESTIGATION_OPS_EXCHANGE,
