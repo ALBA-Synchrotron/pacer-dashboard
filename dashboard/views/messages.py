@@ -10,14 +10,14 @@ MAX_MSG_PER_PAGE: int = 10
 def get_user_filters(request) -> Q:
     user_filter: Q = GroupProfile.get_user_filters(request.user)
     message_type_filters: list = request.GET.getlist("msg-filters")
-    text_search: str = request.GET.get("general-search", "")
+    text_search: str = request.GET.get("general-search", "").strip()
     errored_only: bool = request.GET.get("errored-only", "off") == "on"
     payload_types: list = request.GET.getlist("payload-type")
 
     if message_type_filters:
         user_filter &= Q(message_type__in=message_type_filters)
     if text_search:
-        user_filter &= Q(object_identifiers__icontains=text_search)
+        user_filter &= Q(object_identifiers__icontains=text_search) | Q(hash__icontains=text_search)
     if errored_only:
         user_filter &= Q(errored=True)
     if payload_types:
