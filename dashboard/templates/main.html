@@ -38,6 +38,25 @@
     {% endif %}
     <span id="message-results"></span>
 </div>
+
+<div class="dock">
+    <button>
+        <i class="fa-solid fa-arrow-up-right-dots"></i>
+        <span class="dock-label">Statistics</span>
+    </button>
+
+    <button class="dock-active">
+        <i class="fa-solid fa-house"></i>
+        <span class="dock-label">Home</span>
+    </button>
+    {% if user.is_staff %}
+    <button onclick="window.location.href='{% app_subpath %}/admin/'">
+        <i class="fa-solid fa-gears"></i>
+        <span class="dock-label">Administration</span>
+    </button>
+    {% endif %}
+</div>
+
 {% include "footer.html" %}
 
 
