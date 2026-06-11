@@ -1,8 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Q
+from django.http import Http404
 from django.views.generic import TemplateView
 
 from dashboard.models import Message, GroupProfile
+from django.conf import settings
 
 MAX_MSG_PER_PAGE: int = 10
 
@@ -15,7 +18,7 @@ def get_user_filters(request) -> Q:
     payload_types: list = request.GET.getlist("payload-type")
     start_date: str = request.GET.get("startDate", "")
     end_date: str = request.GET.get("endDate", "")
-
+    include_acknowledged: bool = request.GET.get("include-acknowledged", "off") == "on"
 
     if message_type_filters:
         user_filter &= Q(message_type__in=message_type_filters)
@@ -29,6 +32,8 @@ def get_user_filters(request) -> Q:
         user_filter &= Q(processing_start__gte=start_date)
     if end_date:
         user_filter &= Q(processing_start__lte=end_date)
+    if not include_acknowledged:
+        user_filter &= Q(acknowledged=False)
     return user_filter
 
 
@@ -77,3 +82,38 @@ class TemplateGetById(TemplateView):
         user_filters &= Q(id=msg_id)
 
         return Message.objects.filter(user_filters).first()
+
+
+class MessageAcknowledgeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+    template_name: str = "msg_card/msg_card.html"
+
+    def has_permission(self):
+        if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in self.request.user.groups.all()]:
+            return True
+        return GroupProfile.message_actions_allowed(self.request.user)
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
+        return Message.objects.filter(user_filters).first()
+
+    def post(self, request, *args, **kwargs):
+        msg_id = self.kwargs.get("msg_id")
+        msg = self.get_object(msg_id)
+
+        if msg is None:
+            raise Http404("Message not found")
+
+        msg.acknowledged = not msg.acknowledged
+        msg.save(update_fields=["acknowledged"])
+
+        self.object = msg
+        return self.get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+
+        msg_id: int = self.kwargs.get("msg_id", None)
+        msg: Message | None = self.get_object(msg_id)
+        if msg is not None:
+            context["msg"] = msg
+        return context

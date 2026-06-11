@@ -49,7 +49,12 @@ function restoreFilters() {
         {
             id: "errored-only-toggle",
             key: "errored"
-        }, ...variableFilters
+        },
+        {
+            id: "include-acknowledged-toggle",
+            key: "acknowledged"
+        },
+        ...variableFilters
     ]
 
     for (const filter of filters) {

@@ -54,6 +54,10 @@ class GroupProfile(models.Model):
         return msg_types
 
     @classmethod
+    def message_actions_allowed(cls, user: User):
+        return user.groups.filter(groupprofile__msg_actions_allowed=True).exists()
+
+    @classmethod
     def get_user_filters(cls, user: User) -> Q:
         cache_key: str = f"{user.username}{settings.USER_MSG_CACHE_QUERY_FILTERS_KEY_SUFFIX}"
         query: Q = cache.get(cache_key, None)
@@ -62,7 +66,7 @@ class GroupProfile(models.Model):
 
         query = Q()
 
-        if not "Administrator" in [i.name for i in user.groups.all()] or user.groups.count() == 0:
+        if not settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in user.groups.all()] or user.groups.count() == 0:
 
             profiles: QuerySet = user.groups.select_related("groupprofile").all()
             allowed_msg_types: str = ",".join(
