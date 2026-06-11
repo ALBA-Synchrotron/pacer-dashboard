@@ -15,6 +15,7 @@ def get_user_filters(request) -> Q:
     payload_types: list = request.GET.getlist("payload-type")
     start_date: str = request.GET.get("startDate", "")
     end_date: str = request.GET.get("endDate", "")
+    include_acknowledged: bool = request.GET.get("include-acknowledged", "off") == "on"
 
 
     if message_type_filters:
@@ -29,6 +30,8 @@ def get_user_filters(request) -> Q:
         user_filter &= Q(processing_start__gte=start_date)
     if end_date:
         user_filter &= Q(processing_start__lte=end_date)
+    if not include_acknowledged:
+        user_filter &= Q(acknowledged=False)
     return user_filter
 
 

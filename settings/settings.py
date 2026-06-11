@@ -214,4 +214,6 @@ USER_CACHE_KEYS_SUFFIX: dict = {
     if name.startswith("USER_MSG_CACHE_") and isinstance(value, str)
 }
 
+ADMIN_ROLE_GROUP_NAME: str = "Administrator"
+
 TESTING_MODE: bool = False

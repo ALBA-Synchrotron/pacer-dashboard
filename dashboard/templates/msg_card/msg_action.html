@@ -1,14 +1,21 @@
-<!-- TODO: Users with group.groupprofile.msg_actions_allowed set to False should not be able to do these actions (control this in backend)-->
-<button class="btn btn-square btn-sm rounded-lg" aria-label="acknowledge message"
-        disabled="disabled">
-    <i class="fa-solid fa-square-check" style="font-size: 1.5em"></i>
-</button>
-<button class="btn btn-square btn-sm rounded-lg" aria-label="resend message"
-        disabled="disabled">
-    <i class="fa-solid fa-share" style="font-size: 1.5em"></i>
-</button>
-<button class="btn btn-square btn-sm rounded-lg" aria-label="see related message"
-        disabled="disabled">
-    <i class="fa-solid fa-arrow-up-right-from-square"
-       style="font-size: 1.5em"></i>
-</button>
+{% load tags %}
+{% message_actions_allowed as actions_allowed %}
+<div class="tooltip" data-tip="Mark message as acknowledged / read">
+    <button class="btn btn-square btn-sm rounded-lg" aria-label="acknowledge message"
+            {% if not actions_allowed %}disabled="disabled"{% endif %}>
+        <i class="fa-solid fa-square-check" style="font-size: 1.5em"></i>
+    </button>
+</div>
+<div class="tooltip" data-tip="Resend message for reingestion">
+    <button class="btn btn-square btn-sm rounded-lg" aria-label="resend message"
+            {% if not actions_allowed %}disabled="disabled"{% endif %}>
+        <i class="fa-solid fa-share" style="font-size: 1.5em"></i>
+    </button>
+</div>
+<div class="tooltip" data-tip="See related messages">
+    <button class="btn btn-square btn-sm rounded-lg" aria-label="see related message"
+    >
+        <i class="fa-solid fa-arrow-up-right-from-square"
+           style="font-size: 1.5em"></i>
+    </button>
+</div>

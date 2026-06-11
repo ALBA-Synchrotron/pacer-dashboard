@@ -6,6 +6,8 @@ import xml
 from django import template
 from django.conf import settings
 
+from dashboard.models import GroupProfile
+
 register = template.Library()
 
 
@@ -79,3 +81,9 @@ def badge_text(name: str) -> str:
     h = stable_hash(name)
     hue = h % 360
     return f"hsl({hue} 70% 35%)"
+
+@register.simple_tag(takes_context=True)
+def message_actions_allowed(context) -> bool:
+    if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in context["request"].user.groups.all()]:
+        return True
+    return GroupProfile.message_actions_allowed(context["request"].user)
