@@ -1,8 +1,11 @@
 {% load tags %}
 {% message_actions_allowed as actions_allowed %}
-<div class="tooltip" data-tip="Mark message as acknowledged / read">
-    <button class="btn btn-square btn-sm rounded-lg" aria-label="acknowledge message"
-            {% if not actions_allowed %}disabled="disabled"{% endif %}>
+<div class="tooltip" data-tip="Toggle message  acknowledgment">
+    <button class="btn btn-square {% if msg.acknowledged %} btn-accent {% endif %} btn-sm rounded-lg" aria-label="acknowledge message"
+            {% if not actions_allowed %}disabled="disabled"{% endif %}
+    hx-post="{% url 'messages_tmpl_ack' msg.id %}"
+    hx-target="closest .msg-card"
+    hx-swap="outerHTML">
         <i class="fa-solid fa-square-check" style="font-size: 1.5em"></i>
     </button>
 </div>

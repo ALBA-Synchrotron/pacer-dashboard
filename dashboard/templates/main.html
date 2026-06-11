@@ -75,6 +75,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
 <script type="module" src="https://unpkg.com/cally"></script>
 <script>
+document.body.addEventListener('htmx:configRequest', function (event) {
+    event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+});
+</script>
+<script>
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const messagesRoomName = "messages";
     const appContextPath = "{% app_subpath %}";
