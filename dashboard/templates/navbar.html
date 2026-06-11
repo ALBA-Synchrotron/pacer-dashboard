@@ -61,7 +61,7 @@
                 </label>
             </div>
             <div class="row-span-1 col-span-2">
-                <form id="msg-filters-form" class="flex flex-wrap gap-1" style="margin-top: -0.75em">
+                <form id="msg-filters-form" class="flex flex-wrap gap-1">
                     <input type="hidden" id="current-page" name="current-page" aria-label="current-page"
                            value="{{ current_page }}">
                     <input type="hidden" id="total-msgs" name="total-msgs" aria-label="total-msgs"
@@ -78,7 +78,7 @@
                             {% include "messages-view-call.html" with htmx_trigger="reset from:#msg-filters-form delay:10ms" %}
                             hx-on:input="{% for msg_type in message_types %}
                             localStorage.setItem('{{ msg_type }}', 'false');
-{% endfor %}"
+                            {% endfor %}"
                     >
                         <i class="fa-solid fa-x"></i>
                     </button>
@@ -142,6 +142,13 @@
                                    hx-on:input="localStorage.setItem('errored', this.checked)"
                                     {% include "messages-view-call.html" %}/>
                             Show errored only
+                        </label>
+                        <label class="label">
+                            <input type="checkbox" class="toggle toggle-primary" name="include-acknowledged"
+                                   id="include-acknowledged-toggle"
+                                   hx-on:input="localStorage.setItem('acknowledged', this.checked)"
+                                    {% include "messages-view-call.html" %}/>
+                            Include acknowledged
                         </label>
                     </form>
                 </fieldset>
