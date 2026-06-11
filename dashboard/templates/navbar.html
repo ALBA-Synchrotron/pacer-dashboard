@@ -49,7 +49,7 @@
         </div>
     </div>
     <div class="flex-2">
-        <div class="grid grid-flow-col grid-rows-2 gap-1" style="max-width: 50em">
+        <div class="flex flex-col grid-rows-2" style="max-width: 50em">
             <div class="row-span-1 col-span-2">
                 <label class="input general-text-search rounded-xl">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -60,7 +60,7 @@
                     />
                 </label>
             </div>
-            <div class="row-span-1 col-span-2">
+            <div class="row-span-1 col-span-2" style="margin-top: 0.5em">
                 <form id="msg-filters-form" class="flex flex-wrap gap-1">
                     <input type="hidden" id="current-page" name="current-page" aria-label="current-page"
                            value="{{ current_page }}">
@@ -136,20 +136,31 @@
                                 {% include "messages-view-call.html" with htmx_trigger="reset from:#payload-type-filters-form delay:10ms" %}>
                             <i class="fa-solid fa-x"></i>
                         </button>
-                        <label class="label">
-                            <input type="checkbox" class="toggle toggle-error" name="errored-only"
-                                   id="errored-only-toggle"
-                                   hx-on:input="localStorage.setItem('errored', this.checked)"
-                                    {% include "messages-view-call.html" %}/>
-                            Show errored only
-                        </label>
-                        <label class="label">
-                            <input type="checkbox" class="toggle toggle-primary" name="include-acknowledged"
-                                   id="include-acknowledged-toggle"
-                                   hx-on:input="localStorage.setItem('acknowledged', this.checked)"
-                                    {% include "messages-view-call.html" %}/>
-                            Include acknowledged
-                        </label>
+                        <div class="flex gap-4 items-center" style="margin-top: 0.25em">
+                            <label class="label">
+                                <input
+                                        type="checkbox"
+                                        class="toggle toggle-error"
+                                        name="errored-only"
+                                        id="errored-only-toggle"
+                                        hx-on:input="localStorage.setItem('errored', this.checked)"
+                                        {% include "messages-view-call.html" %}
+                                />
+                                Show errored only
+                            </label>
+
+                            <label class="label">
+                                <input
+                                        type="checkbox"
+                                        class="toggle toggle-primary"
+                                        name="include-acknowledged"
+                                        id="include-acknowledged-toggle"
+                                        hx-on:input="localStorage.setItem('acknowledged', this.checked)"
+                                        {% include "messages-view-call.html" %}
+                                />
+                                Include acknowledged
+                            </label>
+                        </div>
                     </form>
                 </fieldset>
             </div>
