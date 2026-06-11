@@ -205,4 +205,13 @@ CHANNEL_LAYERS = {
     },
 }
 
+USER_MSG_CACHE_TYPE_FILTERS_KEY_SUFFIX: str = "_ui_profile_filters"
+USER_MSG_CACHE_QUERY_FILTERS_KEY_SUFFIX: str = "_ui_profile_query_filters"
+
+USER_CACHE_KEYS_SUFFIX: dict = {
+    name: value
+    for name, value in globals().items()
+    if name.startswith("USER_MSG_CACHE_") and isinstance(value, str)
+}
+
 TESTING_MODE: bool = False
