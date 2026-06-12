@@ -1,0 +1,95 @@
+{% load tags %}
+<form id="reingest-form">
+    <input type="hidden" name="msg-id" value="{{ msg.id }}">
+    <div class="card card-sm bg-base-100 shadow-sm" style="margin-top: 0.5em">
+        <div class="card-body">
+            <h2 class="card-title">Payload (click to edit)</h2>
+            <span id="formatted-code" hx-on:click="
+        this.style.display='none';
+        document.getElementById('ta-code').style.display='block';
+      " style="max-height: 30em; overflow-y: auto;">
+                 {% if msg.payload_format == "json" %}
+                     <pre class="payload-pre"><code
+                             class="hljs-target language-json">{{ msg.payload|pretty_json }}</code></pre>
+                 {% elif msg.payload_format == "xml" %}
+                     <pre class="payload-pre"><code
+                             class="hljs-target language-xml">{{ msg.payload|pretty_xml }}</code></pre>
+                 {% else %}
+                     <pre class="payload-pre"><code
+                             class="hljs-target language-plaintext">{{ msg.payload }}</code></pre>
+                 {% endif %}
+            </span>
+            <textarea id="ta-code" name="msg-payload"
+                      class="textarea textarea-primary textarea-md"
+                      style="width: 100%; min-height: 30em; display: none">
+                {{ msg.payload }}
+            </textarea>
+
+            <div role="alert" class="alert alert-info alert-soft">
+                <i class="fa-solid fa-kiwi-bird" style="font-size: 2em"></i>
+                <span>
+
+        For multi-stage data ingestion pipelines, resending messages to intermediate stages may not be supported and could result in unexpected processing behavior.<br>
+        <b>
+            Resend messages ONLY to the first stage of the pipeline.
+    </b>
+    </span>
+            </div>
+            <ul class="timeline justify-center" style="margin-top: -10em">
+                <li>
+                    <div class="timeline-start">{{ msg.processing_start|date:"F j, Y, H:i" }}</div>
+                    <div class="timeline-middle">
+                        <i class="fa-solid fa-circle-check" style="color: var(--color-success); font-size: 1.5em"></i>
+                    </div>
+                    <div class="timeline-end timeline-box">
+                        <div class="leading-none">
+                            <h2 class="font-semibold text-md">From exchange</h2>
+                            <div class="text-md tracking-wide msg-property-value font-bold">{{ msg.exchange_name }}
+                            </div>
+                        </div>
+                        <br>
+                        <div class="leading-none">
+                            <h2 class="font-semibold text-md">Routing key</h2>
+                            <div class="text-md tracking-wide msg-property-value font-bold">{{ msg.routing_key }}
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                    </div>
+                    <hr/>
+                </li>
+                <li class="space-betweem">
+                    <hr/>
+                <div class="timeline-start"><b>Now</b></div>
+                    <div class="timeline-middle">
+                        <i class="fa-solid fa-retweet" style="color: var(--color-primary); font-size: 1.5em"></i>
+                    </div>
+                    <div class="timeline-end timeline-box">
+                        <div class="leading-none">
+                            <h2 class="font-semibold text-md">To exchange</h2>
+                            <div class="input text-md tracking-wide msg-property-value">{{ msg.exchange_name }}
+                            </div>
+                        </div>
+                        <br>
+                        <div class="leading-none">
+                            <h2 class="font-semibold text-md">Routing key</h2>
+                            <div class="text-md tracking-wide msg-property-value">
+                                <select class="select">
+                                    <option disabled selected>{{ msg.routing_key }}</option>
+                                    {% for routing_key in routing_keys %}
+                                        <option>{{ routing_key }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="card-actions justify-end">
+                <button class="btn btn-primary" type="button" hx-on:click="submitMessageReingest()"
+                >Send
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
