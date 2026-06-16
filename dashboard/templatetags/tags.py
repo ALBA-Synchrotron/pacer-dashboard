@@ -1,5 +1,6 @@
 import ast
 import hashlib
+import itertools
 import json
 import xml
 
@@ -87,3 +88,14 @@ def message_actions_allowed(context) -> bool:
     if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in context["request"].user.groups.all()]:
         return True
     return GroupProfile.message_actions_allowed(context["request"].user)
+
+@register.simple_tag
+def can_reingest_message(user, msg):
+    if settings.ADMIN_ROLE_GROUP_NAME in [g.name for g in user.groups.all()]:
+        return True
+
+    allowed_reingestions = [
+        g.groupprofile.allowed_message_types_reingest.split(",")
+        for g in user.groups.all()
+    ]
+    return msg.message_type in [item for sublist in allowed_reingestions for item in sublist]

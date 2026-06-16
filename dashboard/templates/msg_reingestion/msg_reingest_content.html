@@ -37,20 +37,20 @@
             </div>
             <ul class="timeline justify-center" style="margin-top: -10em">
                 <li>
-                    <div class="timeline-start">{{ msg.processing_start|date:"F j, Y, H:i" }}</div>
+                    <div class="timeline-start" style="font-size: 1.3em">{{ msg.processing_start|date:"F j, Y, H:i" }}</div>
                     <div class="timeline-middle">
                         <i class="fa-solid fa-circle-check" style="color: var(--color-success); font-size: 1.5em"></i>
                     </div>
                     <div class="timeline-end timeline-box">
                         <div class="leading-none">
-                            <h2 class="font-semibold text-md">From exchange</h2>
-                            <div class="text-md tracking-wide msg-property-value font-bold">{{ msg.exchange_name }}
+                            <h2 class="font-semibold text-md" style="font-size: 1.2em">From exchange</h2>
+                            <div class="text-md tracking-wide msg-property-value font-bold" style="font-size: 1.2em">{{ msg.exchange_name }}
                             </div>
                         </div>
                         <br>
                         <div class="leading-none">
-                            <h2 class="font-semibold text-md">Routing key</h2>
-                            <div class="text-md tracking-wide msg-property-value font-bold">{{ msg.routing_key }}
+                            <h2 class="font-semibold text-md" style="font-size: 1.2em">Routing key</h2>
+                            <div class="text-md tracking-wide msg-property-value font-bold" style="font-size: 1.2em">{{ msg.routing_key }}
                             </div>
                         </div>
                         <br>
@@ -60,19 +60,19 @@
                 </li>
                 <li class="space-betweem">
                     <hr/>
-                <div class="timeline-start"><b>Now</b></div>
+                <div class="timeline-start" style="font-size: 1.3em"><b>Now</b></div>
                     <div class="timeline-middle">
                         <i class="fa-solid fa-retweet" style="color: var(--color-primary); font-size: 1.5em"></i>
                     </div>
                     <div class="timeline-end timeline-box">
                         <div class="leading-none">
-                            <h2 class="font-semibold text-md">To exchange</h2>
+                            <h2 class="font-semibold text-md" style="font-size: 1.2em">To exchange</h2>
                             <div class="input text-md tracking-wide msg-property-value">{{ msg.exchange_name }}
                             </div>
                         </div>
                         <br>
                         <div class="leading-none">
-                            <h2 class="font-semibold text-md">Routing key</h2>
+                            <h2 class="font-semibold text-md" style="font-size: 1.2em">Routing key</h2>
                             <div class="text-md tracking-wide msg-property-value">
                                 <select class="select">
                                     <option disabled selected>{{ msg.routing_key }}</option>

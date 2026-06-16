@@ -135,7 +135,8 @@ class MessageReingestionTemplateView(LoginRequiredMixin, PermissionRequiredMixin
         return GroupProfile.message_actions_allowed(self.request.user)
 
     def __get_available_routing_keys(self, msg: Message) -> list:
-        opts = list(Message.objects.filter(exchange_name=msg.exchange_name).values_list("routing_key", flat=True).distinct())
+        opts = list(
+            Message.objects.filter(exchange_name=msg.exchange_name).values_list("routing_key", flat=True).distinct())
         opts.remove(msg.routing_key)
         return opts
 
@@ -158,7 +159,17 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
     def has_permission(self):
         if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in self.request.user.groups.all()]:
             return True
-        return GroupProfile.message_actions_allowed(self.request.user)
+        msg_id: int = int(self.request.POST.get("msg-id", 0))
+        msg: Message | None = self.get_object(msg_id)
+
+        allowed_reingestions = [
+            g.groupprofile.allowed_message_types_reingest.split(",")
+            for g in self.request.user.groups.all()
+        ]
+
+        return GroupProfile.message_actions_allowed(self.request.user) and msg.message_type in [item for sublist in
+                                                                                                allowed_reingestions for
+                                                                                                item in sublist]
 
     def post(self, request, *args, **kwargs):
         msg_id: int = int(request.POST.get("msg-id", 0))
@@ -179,7 +190,7 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
                     msg_payload = msg_payload.strip()
 
             GenericPublisher.send_messages_to_broker([msg_payload], msg.exchange_name,
-                                                     msg.routing_key)
+                                                     msg.routing_key, dump_json_body=msg.payload_format=="json")
             return Response(status=status.HTTP_200_OK)
         except Exception:
             return Response(status.HTTP_500_INTERNAL_SERVER_ERROR)
