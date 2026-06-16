@@ -12,14 +12,15 @@ def create_default_groups(_apps, _schema):
     for group_name in group_names:
         _, _ = Group.objects.get_or_create(name=group_name)
 
+
     readers = Group.objects.get(name="Readers")
-    readers_profile = GroupProfile(group=readers)
+    readers_profile = readers.groupprofile
     readers_profile.allowed_message_types = "proposal-sync,investigation-ops,dataset-ingestion,internal-dataset-ingestion"
     readers_profile.allowed_message_types_reingest = "investigation-ops,dataset-ingestion,internal-dataset-ingestion"
     readers_profile.save()
 
     restricted_readers = Group.objects.get(name="RestrictedReaders")
-    restricted_readers_profile = GroupProfile(group=restricted_readers)
+    restricted_readers_profile = restricted_readers.groupprofile
     restricted_readers_profile.allowed_message_types = "proposal-sync,investigation-ops,dataset-ingestion,internal-dataset-ingestion"
 
     restricted_readers_profile.save()
@@ -27,10 +28,9 @@ def create_default_groups(_apps, _schema):
     for bl_group in [i for i in group_names if i.startswith("BL")]:
 
         group = Group.objects.get(name=bl_group)
-        group_profile = GroupProfile(group=group)
-        group_profile.allowed_message_types = "proposal-sync,dataset-ingestion,internal-dataset-ingestion"
-        group_profile.allowed_object_identifiers = bl_group
-        group_profile.save()
+        group.groupprofile.allowed_message_types = "proposal-sync,dataset-ingestion,internal-dataset-ingestion"
+        group.groupprofile.allowed_object_identifiers = bl_group
+        group.groupprofile.save()
 
 
 class Migration(migrations.Migration):
