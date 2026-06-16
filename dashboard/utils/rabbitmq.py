@@ -35,7 +35,7 @@ class GenericPublisher:
 
     @classmethod
     def send_messages_to_broker(cls, messages: list, exchange_name: str, routing_key: str = None,
-                                  headers: dict = None):
+                                  headers: dict = None, dump_json_body: bool = True):
         broker_conn: BlockingConnection or None = cls.__get_broker_connection()
         properties: BasicProperties = BasicProperties(headers=headers) if headers else None
         if not broker_conn: return
@@ -48,7 +48,7 @@ class GenericPublisher:
                     channel.basic_publish(
                         exchange=exchange_name,
                         routing_key=routing_key,
-                        body=json.dumps(message, ensure_ascii=False),
+                        body=json.dumps(message, ensure_ascii=False) if dump_json_body else message,
                         properties=properties)
                     logger.debug(f"Message confirmed by broker")
                 except UnroutableError as e:

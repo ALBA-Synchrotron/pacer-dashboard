@@ -40,6 +40,12 @@ THIRD_PARTY_APPS: list = [
     "rest_framework",
 ]
 
+REST_FRAMEWORK: dict = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
 INSTALLED_APPS: list = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE: list = [
@@ -108,7 +114,6 @@ AUTH_PASSWORD_VALIDATORS: list = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 FIXTURE_DIRS: set = {
     os.path.join(BASE_DIR, "dashboard/tests/fixtures/"),
@@ -204,5 +209,16 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+USER_MSG_CACHE_TYPE_FILTERS_KEY_SUFFIX: str = "_ui_profile_filters"
+USER_MSG_CACHE_QUERY_FILTERS_KEY_SUFFIX: str = "_ui_profile_query_filters"
+
+USER_CACHE_KEYS_SUFFIX: dict = {
+    name: value
+    for name, value in globals().items()
+    if name.startswith("USER_MSG_CACHE_") and isinstance(value, str)
+}
+
+ADMIN_ROLE_GROUP_NAME: str = "Administrator"
 
 TESTING_MODE: bool = False

@@ -1,8 +1,18 @@
+import json
+
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Q
+from django.http import Http404
 from django.views.generic import TemplateView
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 
 from dashboard.models import Message, GroupProfile
+from django.conf import settings
+
+from dashboard.utils.rabbitmq import GenericPublisher
 
 MAX_MSG_PER_PAGE: int = 10
 
@@ -15,7 +25,7 @@ def get_user_filters(request) -> Q:
     payload_types: list = request.GET.getlist("payload-type")
     start_date: str = request.GET.get("startDate", "")
     end_date: str = request.GET.get("endDate", "")
-
+    include_acknowledged: bool = request.GET.get("include-acknowledged", "off") == "on"
 
     if message_type_filters:
         user_filter &= Q(message_type__in=message_type_filters)
@@ -29,6 +39,8 @@ def get_user_filters(request) -> Q:
         user_filter &= Q(processing_start__gte=start_date)
     if end_date:
         user_filter &= Q(processing_start__lte=end_date)
+    if not include_acknowledged:
+        user_filter &= Q(acknowledged=False)
     return user_filter
 
 
@@ -76,4 +88,113 @@ class TemplateGetById(TemplateView):
         user_filters: Q = get_user_filters(self.request)
         user_filters &= Q(id=msg_id)
 
+        return Message.objects.filter(user_filters).first()
+
+
+class MessageAcknowledgeView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+    template_name: str = "msg_card/msg_card.html"
+
+    def has_permission(self):
+        if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in self.request.user.groups.all()]:
+            return True
+        return GroupProfile.message_actions_allowed(self.request.user)
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
+        return Message.objects.filter(user_filters).first()
+
+    def post(self, request, *args, **kwargs):
+        msg_id = self.kwargs.get("msg_id")
+        msg = self.get_object(msg_id)
+
+        if msg is None:
+            raise Http404("Message not found")
+
+        msg.acknowledged = not msg.acknowledged
+        msg.save(update_fields=["acknowledged"])
+
+        self.object = msg
+        return self.get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+
+        msg_id: int = self.kwargs.get("msg_id", None)
+        msg: Message | None = self.get_object(msg_id)
+        if msg is not None:
+            context["msg"] = msg
+        return context
+
+
+class MessageReingestionTemplateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
+    template_name: str = "msg_reingestion/msg_reingest_content.html"
+
+    def has_permission(self):
+        if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in self.request.user.groups.all()]:
+            return True
+        return GroupProfile.message_actions_allowed(self.request.user)
+
+    def __get_available_routing_keys(self, msg: Message) -> list:
+        opts = list(
+            Message.objects.filter(exchange_name=msg.exchange_name).values_list("routing_key", flat=True).distinct())
+        opts.remove(msg.routing_key)
+        return opts
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+
+        msg_id: int = self.kwargs.get("msg_id", None)
+        msg: Message | None = self.get_object(msg_id)
+        if msg is not None:
+            context["msg"] = msg
+            context["routing_keys"] = self.__get_available_routing_keys(msg)
+        return context
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
+        return Message.objects.filter(user_filters).first()
+
+
+class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, GenericAPIView):
+    def has_permission(self):
+        if settings.ADMIN_ROLE_GROUP_NAME in [i.name for i in self.request.user.groups.all()]:
+            return True
+        msg_id: int = int(self.request.POST.get("msg-id", 0))
+        msg: Message | None = self.get_object(msg_id)
+
+        allowed_reingestions = [
+            g.groupprofile.allowed_message_types_reingest.split(",")
+            for g in self.request.user.groups.all()
+        ]
+
+        return GroupProfile.message_actions_allowed(self.request.user) and msg.message_type in [item for sublist in
+                                                                                                allowed_reingestions for
+                                                                                                item in sublist]
+
+    def post(self, request, *args, **kwargs):
+        msg_id: int = int(request.POST.get("msg-id", 0))
+        msg_payload = request.POST.get("msg-payload", "")
+
+        if not msg_payload:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        msg: Message | None = self.get_object(msg_id)
+
+        if not msg:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
+            match msg.payload_format:
+                case "json":
+                    msg_payload = json.loads(msg_payload)
+                case "xml":
+                    msg_payload = msg_payload.strip()
+
+            GenericPublisher.send_messages_to_broker([msg_payload], msg.exchange_name,
+                                                     msg.routing_key, dump_json_body=msg.payload_format=="json")
+            return Response(status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
         return Message.objects.filter(user_filters).first()
