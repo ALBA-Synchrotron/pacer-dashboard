@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboard', '0016_create_default_gprofiles'),
+        ('dashboard', '0015_groupprofile_msg_actions_allowed'),
     ]
 
     operations = [
