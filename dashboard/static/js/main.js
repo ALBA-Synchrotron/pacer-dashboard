@@ -101,7 +101,7 @@ function resetDateRangeFilter() {
 
 function openReingestionModal(messageId) {
     reingestion_modal.showModal();
-    htmx.ajax("GET", appContextPath + "tmpl/messages/" + messageId + "/reingest", {
+    htmx.ajax("GET", appContextPath + "/tmpl/messages/" + messageId + "/reingest", {
         target: "#reingestion_modal_content",
         swap: "innerHTML"
     });
@@ -109,7 +109,7 @@ function openReingestionModal(messageId) {
 
 function submitMessageReingest() {
     const form = document.getElementById("reingest-form");
-    htmx.ajax("POST", appContextPath + "tmpl/messages/reingest", {
+    htmx.ajax("POST", appContextPath + "/tmpl/messages/reingest", {
         source: form,
     }).then(() => {
         reingestion_modal.close();
