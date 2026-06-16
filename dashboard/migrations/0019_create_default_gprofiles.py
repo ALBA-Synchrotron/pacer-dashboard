@@ -15,11 +15,13 @@ def create_default_groups(_apps, _schema):
     readers = Group.objects.get(name="Readers")
     readers_profile = GroupProfile(group=readers)
     readers_profile.allowed_message_types = "proposal-sync,investigation-ops,dataset-ingestion,internal-dataset-ingestion"
+    readers_profile.allowed_message_types_reingest = "investigation-ops,dataset-ingestion,internal-dataset-ingestion"
     readers_profile.save()
 
     restricted_readers = Group.objects.get(name="RestrictedReaders")
     restricted_readers_profile = GroupProfile(group=restricted_readers)
     restricted_readers_profile.allowed_message_types = "proposal-sync,investigation-ops,dataset-ingestion,internal-dataset-ingestion"
+
     restricted_readers_profile.save()
 
     for bl_group in [i for i in group_names if i.startswith("BL")]:
@@ -33,7 +35,7 @@ def create_default_groups(_apps, _schema):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('dashboard', '0015_groupprofile_msg_actions_allowed'),
+        ('dashboard', '0018_groupprofile_allowed_message_types_reingest'),
     ]
 
     operations = [

@@ -82,7 +82,7 @@ document.body.addEventListener("htmx:afterSwap", (evt) => {
     });
 });
 
-function dateRangeFilter(){
+function dateRangeFilter() {
     let selectedDateRange = $(document.getElementById("calendar-filter")).val();
     $("#date-range-selection").text(selectedDateRange.replace('/', ' to '));
     const [startDate, endDate] = selectedDateRange.split("/");
@@ -90,11 +90,30 @@ function dateRangeFilter(){
     $("#endDate").val(endDate);
 }
 
-function resetDateRangeFilter(){
+function resetDateRangeFilter() {
     const calendar = document.getElementById("calendar-filter");
     calendar.value = null;
     $("#startDate").val("");
     $("#endDate").val("");
-    calendar.dispatchEvent(new Event("change", { bubbles: true }));
+    calendar.dispatchEvent(new Event("change", {bubbles: true}));
     $("#date-range-selection").text("Select date range");
+}
+
+function openReingestionModal(messageId) {
+    reingestion_modal.showModal();
+    htmx.ajax("GET", appContextPath + "tmpl/messages/" + messageId + "/reingest", {
+        target: "#reingestion_modal_content",
+        swap: "innerHTML"
+    });
+}
+
+function submitMessageReingest() {
+    const form = document.getElementById("reingest-form");
+    htmx.ajax("POST", appContextPath + "tmpl/messages/reingest", {
+        source: form,
+    }).then(() => {
+        reingestion_modal.close();
+    });
+
+
 }
