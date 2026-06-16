@@ -16,7 +16,7 @@ class GroupProfile(models.Model):
     )
     allowed_message_types = models.CharField(max_length=255, blank=True, null=True,
                                              verbose_name=MODEL_LABELS.get("allowed_message_types"))
-    allowed_message_types_reingest = models.CharField(max_length=255, blank=True, null=True,
+    allowed_message_types_reingest = models.CharField(max_length=255, blank=True, null=True, default="",
                                              verbose_name=MODEL_LABELS.get("allowed_message_types_reingest"))
     allowed_object_identifiers = models.CharField(max_length=255, blank=True, null=True,
                                                   verbose_name=MODEL_LABELS.get("allowed_object_identifiers"))
