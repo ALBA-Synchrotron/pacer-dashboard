@@ -1,6 +1,7 @@
 {% load tags %}
 {% load static %}
-<div class="navbar bg-base-100 rounded shadow-sm border border-base-300 mx-auto px-4 container sticky top-4 z-50 rounded-xl">
+<div id="tour-navbar"
+     class="navbar bg-base-100 rounded shadow-sm border border-base-300 mx-auto px-4 container sticky top-4 z-50 rounded-xl">
     <div class="flex-1">
         <div class="grid grid-flow-col grid-rows-2 gap-2">
             <div class="row-span-2">
@@ -91,16 +92,21 @@
             <div class="row-span-1 col-span-2">
                 <ul class="menu menu-horizontal px-1">
                     <li>
+                        <span id="tour-stream-live">
                         <label class="label">
                             <input type="checkbox" hx-on:change="toggleWS()"
                                    class="toggle toggle-success" name="live-enabled" id="live-enabled"
                             />
                             Stream live
                         </label>
+                        </span>
                     </li>
                     <li>
                         <div style="margin-right: 0.5em; margin-top: -0.4em;">
                             {% include "theme_toggle.html" %}
+                            <button class="btn btn-circle btn-sm swap swap-rotate rounded-xl grid place-items-center" id="tour-again" hx-on:click="driverObj.drive();">
+                                <i class="fa-solid fa-circle-question" style="font-size: 1.4em"></i>
+                            </button>
                         </div>
                     </li>
                     {% if not DISABLED_AUTH %}
