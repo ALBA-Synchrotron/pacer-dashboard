@@ -1,0 +1,45 @@
+<div class="flex flex-container items-center justify-center">
+    <div class="stats shadow">
+        {% include 'stats/general_stat.html' with stats=total_messages_general %}
+        {% include 'stats/general_stat.html' with stats=total_errors_general %}
+        {% include 'stats/general_stat.html' with stats=total_users_general %}
+        {% include 'stats/general_stat.html' with stats=total_investigations_general %}
+    </div>
+</div>
+
+<div class="divider"></div>
+<h3 class="text-xl font-semibold mt-6">Statistics per message type</h3>
+<div class="flex flex-container items-center justify-center">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra">
+            <!-- head -->
+            <thead>
+            <tr>
+                <th></th>
+                <th>Message type</th>
+                <th>Message count</th>
+                <th>Errors count</th>
+                <th>Error rate</th>
+                <th>Most repeated error</th>
+                <th>Most repeated error count</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for msg_type_stat in msg_types_table_stats %}
+                {% if msg_type_stat.msg_count > 0 %}
+                <tr>
+                    <th>{{ forloop.counter }}</th>
+                    <td>{{ msg_type_stat.type }}</td>
+                    <td>{{ msg_type_stat.msg_count }}</td>
+                    <td>{{ msg_type_stat.error_msg_count }}</td>
+                    <td style="{% if msg_type_stat.error_rate < 10 %}color: green{% else %}color: red{% endif %}"
+                        }><b>{{ msg_type_stat.error_rate }}%</b></td>
+                    <td class="font-mono">{{ msg_type_stat.most_repeated_error }}</td>
+                    <td><b>{{ msg_type_stat.most_repeated_error_count }}</b></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

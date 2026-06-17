@@ -16,36 +16,28 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
 </head>
 <body>
-{% include "navbar.html" with include_trigger_html="messages-view-call.html" %}
-<div hx-get="{% app_subpath %}/tmpl/messages"
-        {% include "messages-view-call.html" with htmx_trigger="load delay:1ms" %}>
-</div>
+{% include "navbar.html" with include_trigger_html="stats-view-call.html" %}
 <div id="loading-spinner" class="htmx-indicator flex justify-center p-4">
     <span class="loading loading-dots loading-lg text-primary"></span>
 </div>
 <div class="container mx-auto">
-    {% if not user.is_authenticated %}
-        {% if not DISABLED_AUTH %}
-            <div role="alert" class="alert alert-warning alert-soft rounded-xl font-bold" style="margin-bottom: 1.5em">
-                <span>You aren't logged in. Authenticate to view full details of the messages.</span>
-            </div>
-        {% endif %}
-    {% endif %}
-    {% if user.groups.count == 0  and user.is_authenticated %}
-        <div role="alert" class="alert alert-warning alert-soft rounded-xl font-bold" style="margin-bottom: 1.5em">
-            <span>You aren't assigned to any group. Ask MIS to have your user assigned to a group to view full details of the messages.</span>
-        </div>
-    {% endif %}
-    <span id="message-results"></span>
+    <div  hx-get="{% app_subpath %}/tmpl/stats"
+        {% include "stats-view-call.html" with htmx_trigger="load" %}>
+        <span id="stats-content">
+
+        </span>
+
+    </div>
+
 </div>
 
 <div class="dock">
-    <button onclick="window.location.href='{% app_subpath %}/stats'">
+    <button class="dock-active">
         <i class="fa-solid fa-arrow-up-right-dots"></i>
         <span class="dock-label">Statistics</span>
     </button>
 
-    <button class="dock-active">
+    <button onclick="window.location.href='{% app_subpath %}/'">
         <i class="fa-solid fa-house"></i>
         <span class="dock-label">Home</span>
     </button>
