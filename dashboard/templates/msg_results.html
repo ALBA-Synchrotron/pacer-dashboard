@@ -1,7 +1,15 @@
 {% load tags %}
 <span id="total-msgs-count" hx-swap-oob="true">Showing {{ current_msgs }} of {{ total_msgs }}</span>
-<input type="hidden" id="current-page" name="current-page" hx-swap-oob="true" aria-label="current-page" value="{{ current_page }}">
-<input type="hidden" id="total-msgs" name="total-msgs" hx-swap-oob="true" aria-label="total-msgs" value="{{ total_msgs }}">
+<input type="hidden" id="current-page" name="current-page" hx-swap-oob="true" aria-label="current-page"
+       value="{{ current_page }}">
+<input type="hidden" id="total-msgs" name="total-msgs" hx-swap-oob="true" aria-label="total-msgs"
+       value="{{ total_msgs }}">
 {% for msg in msg_page_obj %}
-    {% include "msg_card/msg_card.html" with msg=msg%}
+    {% if forloop.first %}
+        <span id="tour-first-msg">
+    {% endif %}
+{% include "msg_card/msg_card.html" with msg=msg its_first_message=True %}
+{% if forloop.first %}
+    </span>
+{% endif %}
 {% endfor %}

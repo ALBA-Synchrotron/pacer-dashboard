@@ -114,6 +114,12 @@ function submitMessageReingest() {
     }).then(() => {
         reingestion_modal.close();
     });
+}
 
-
+function openRelatedModal(messageId) {
+    related_modal.showModal();
+    htmx.ajax("GET", appContextPath + "/tmpl/messages/" + messageId + "/related", {
+        target: "#related_modal_content",
+        swap: "innerHTML"
+    });
 }

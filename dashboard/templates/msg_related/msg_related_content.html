@@ -1,0 +1,64 @@
+{% load tags %}
+<ul class="steps steps-horizontal w-full mb-10">
+    {% for msg in related_messages %}
+        <li
+                class="step step-primary"
+                data-content="{{ forloop.counter }}">
+                <span class="font-medium">
+                    <div class="badge badge-soft badge-info badge-card text-slate-800"
+                         style="background-color: {{ msg.message_type|badge_bg }}; color: {{ msg.message_type|badge_text }}">
+                                <b>{{ msg.message_type }}</b></div>
+                    </div>
+                </span>
+        </li>
+    {% endfor %}
+</ul>
+
+<div class="flex flex-wrap items-center justify-center gap-8">
+    <div class="overflow-x-auto">
+        <div class="leading-none">
+            <h2 class="font-semibold text-md">Hash</h2>
+            <div class="text-md tracking-wide text-base-content/50 msg-property-value font-bold"
+            ><span style="color: var(--color-alba-new-blue)">{{ original_message.hash|shorten_hash }}</span>
+                <i class="fa-regular fa-copy transition copy-icon"
+                   onclick="navigator.clipboard.writeText('{{ original_message.hash|shorten_hash }}')"
+                ></i></div>
+        </div>
+        <div class="leading-none" style="margin-top: 0.5em">
+            <h2 class="font-semibold text-md">Identifiers</h2>
+            <div>
+                <b>{% if user.is_authenticated and user.groups.count != 0  or DISABLED_AUTH %}
+                    <span class="font-mono font-bold">{{ original_message.object_identifiers }}</span>
+                {% else %}
+                    <div class="skeleton skeleton-anonymous h-4 w-28"></div>
+                {% endif %}</b></div>
+        </div>
+        <table class="table table-zebra" style="margin-top: 0.5em">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Exchange</th>
+                <th>Routing key</th>
+                <th>Date</th>
+                <th>Processing time</th>
+                <th>Successful</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for msg in related_messages %}
+                <tr>
+                    <th>{{ forloop.counter }}</th>
+                    <td>{{ msg.exchange_name }}</td>
+                    <td><b>{{ msg.routing_key }}</b></td>
+                    <td>{{ msg.processing_start|date:"F j, Y, H:i:s.u" }}</td>
+                    <td>{{ msg.processing_time }}s</td>
+                    <td>{% if msg.errored %}
+                        <span><i class="fa-solid fa-x" style="color: var(--color-error)"></i></span>{% else %}
+                        <span><i class="fa-solid fa-check font-bold"
+                                 style="color: var(--color-success)"></i></span>{% endif %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

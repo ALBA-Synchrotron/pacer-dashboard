@@ -12,36 +12,13 @@ from rest_framework.response import Response
 from dashboard.models import Message, GroupProfile
 from django.conf import settings
 
+from dashboard.utils.messages import get_user_filters
 from dashboard.utils.rabbitmq import GenericPublisher
 
 MAX_MSG_PER_PAGE: int = 10
 
 
-def get_user_filters(request) -> Q:
-    user_filter: Q = GroupProfile.get_user_filters(request.user)
-    message_type_filters: list = request.GET.getlist("msg-filters")
-    text_search: str = request.GET.get("general-search", "").strip()
-    errored_only: bool = request.GET.get("errored-only", "off") == "on"
-    payload_types: list = request.GET.getlist("payload-type")
-    start_date: str = request.GET.get("startDate", "")
-    end_date: str = request.GET.get("endDate", "")
-    include_acknowledged: bool = request.GET.get("include-acknowledged", "off") == "on"
 
-    if message_type_filters:
-        user_filter &= Q(message_type__in=message_type_filters)
-    if text_search:
-        user_filter &= Q(object_identifiers__icontains=text_search) | Q(hash__icontains=text_search)
-    if errored_only:
-        user_filter &= Q(errored=True)
-    if payload_types:
-        user_filter &= Q(payload_format__in=(i.lower() for i in payload_types))
-    if start_date:
-        user_filter &= Q(processing_start__gte=start_date)
-    if end_date:
-        user_filter &= Q(processing_start__lte=end_date)
-    if not include_acknowledged:
-        user_filter &= Q(acknowledged=False)
-    return user_filter
 
 
 class MessagesView(TemplateView):
@@ -190,10 +167,28 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
                     msg_payload = msg_payload.strip()
 
             GenericPublisher.send_messages_to_broker([msg_payload], msg.exchange_name,
-                                                     msg.routing_key, dump_json_body=msg.payload_format=="json")
+                                                     msg.routing_key, dump_json_body=msg.payload_format == "json")
             return Response(status=status.HTTP_200_OK)
         except Exception:
             return Response(status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
+        return Message.objects.filter(user_filters).first()
+
+
+class RelatedMessageTemplateView(TemplateView):
+    template_name: str = "msg_related/msg_related_content.html"
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+
+        msg_id: int = self.kwargs.get("msg_id", None)
+        msg: Message | None = self.get_object(msg_id)
+        if msg is not None:
+            context["related_messages"] = msg.get_related_messages()
+            context["original_message"] = msg
+        return context
 
     def get_object(self, msg_id: int) -> QuerySet:
         user_filters = Q(id=msg_id)

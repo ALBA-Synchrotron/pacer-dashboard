@@ -1,15 +1,23 @@
 {% load tags %}
 {% message_actions_allowed as actions_allowed %}
 {% can_reingest_message request.user msg as can_reingest %}
+{% if its_first_message %}
+    <span id="tour-action-ack">
+{% endif %}
 <div class="tooltip" data-tip="Toggle message  acknowledgment">
-    <button class="btn btn-square {% if msg.acknowledged %} btn-accent {% endif %} btn-sm rounded-lg" aria-label="acknowledge message"
+    <button class="btn btn-square {% if msg.acknowledged %} btn-accent {% endif %} btn-sm rounded-lg"
+            aria-label="acknowledge message"
             {% if not actions_allowed %}disabled="disabled"{% endif %}
-    hx-post="{% url 'messages_tmpl_ack' msg.id %}"
-    hx-target="closest .msg-card"
-    hx-swap="outerHTML">
+            hx-post="{% url 'messages_tmpl_ack' msg.id %}"
+            hx-target="closest .msg-card"
+            hx-swap="outerHTML">
         <i class="fa-solid fa-square-check" style="font-size: 1.5em"></i>
     </button>
 </div>
+{% if its_first_message %}
+    </span>
+    <span id="tour-action-resend">
+{% endif %}
 <div class="tooltip" data-tip="Resend message for reingestion">
     <button class="btn btn-square btn-sm rounded-lg" aria-label="resend message"
             hx-on:click="openReingestionModal({{ msg.id }})"
@@ -19,10 +27,18 @@
         <i class="fa-solid fa-share" style="font-size: 1.5em"></i>
     </button>
 </div>
+{% if its_first_message %}
+    </span>
+    <span id="tour-action-related">
+{% endif %}
 <div class="tooltip" data-tip="See related messages">
     <button class="btn btn-square btn-sm rounded-lg" aria-label="see related message"
+            hx-on:click="openRelatedModal({{ msg.id }})"
     >
         <i class="fa-solid fa-arrow-up-right-from-square"
            style="font-size: 1.5em"></i>
     </button>
 </div>
+{% if its_first_message %}
+    </span>
+{% endif %}

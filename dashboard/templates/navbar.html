@@ -1,6 +1,7 @@
 {% load tags %}
 {% load static %}
-<div class="navbar bg-base-100 rounded shadow-sm border border-base-300 mx-auto px-4 container sticky top-4 z-50 rounded-xl">
+<div id="tour-navbar"
+     class="navbar bg-base-100 rounded shadow-sm border border-base-300 mx-auto px-4 container sticky top-4 z-50 rounded-xl">
     <div class="flex-1">
         <div class="grid grid-flow-col grid-rows-2 gap-2">
             <div class="row-span-2">
@@ -23,7 +24,7 @@
                 <div popover id="cally-popover1" class="dropdown bg-base-100 rounded-box shadow-lg"
                      style="position-anchor:--cally1">
                     <calendar-range class="cally" id="calendar-filter"
-                                    hx-on:change="dateRangeFilter()"  {% include "messages-view-call.html" %}>
+                                    hx-on:change="dateRangeFilter()"  {% include include_trigger_html %}>
                         <svg aria-label="Previous" class="fill-current size-4" slot="previous"
                              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path d="M15.75 19.5 8.25 12l7.5-7.5"></path>
@@ -56,7 +57,7 @@
                     <input type="search" required name="general-search" id="general-text-search"
                            placeholder="Search by investigation, instrument, ..."
                            hx-on:change="localStorage.setItem('search', this.value)"
-                            {% include "messages-view-call.html" %}
+                            {% include include_trigger_html %}
                     />
                 </label>
             </div>
@@ -71,12 +72,12 @@
                                aria-label="{{ msg_type }}" id="{{ msg_type }}-toggle"
                                hx-on:click="localStorage.setItem('{{ msg_type }}', this.checked)"
                                value="{{ msg_type }}"
-                                {% include "messages-view-call.html" %}
+                                {% include include_trigger_html %}
                         />
                     {% endfor %}
                     <button class="btn btn-sm btn-square rounded-xl" type="reset" aria-label="Clear filters"
-                            {% include "messages-view-call.html" with htmx_trigger="reset from:#msg-filters-form delay:10ms" %}
-                            hx-on:input="{% for msg_type in message_types %}
+                            {% include include_trigger_html with htmx_trigger="reset from:#msg-filters-form delay:10ms" %}
+                            hx-on:click="{% for msg_type in message_types %}
                             localStorage.setItem('{{ msg_type }}', 'false');
                             {% endfor %}"
                     >
@@ -91,16 +92,21 @@
             <div class="row-span-1 col-span-2">
                 <ul class="menu menu-horizontal px-1">
                     <li>
+                        <span id="tour-stream-live">
                         <label class="label">
                             <input type="checkbox" hx-on:change="toggleWS()"
                                    class="toggle toggle-success" name="live-enabled" id="live-enabled"
                             />
                             Stream live
                         </label>
+                        </span>
                     </li>
                     <li>
                         <div style="margin-right: 0.5em; margin-top: -0.4em;">
                             {% include "theme_toggle.html" %}
+                            <button class="btn btn-circle btn-sm swap swap-rotate rounded-xl grid place-items-center" id="tour-again" hx-on:click="driverObj.drive();">
+                                <i class="fa-solid fa-circle-question" style="font-size: 1.4em"></i>
+                            </button>
                         </div>
                     </li>
                     {% if not DISABLED_AUTH %}
@@ -124,16 +130,16 @@
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="payload-type" id="xml-toggle"
                                aria-label="XML" hx-on:input="localStorage.setItem('xml', this.checked)"
                                value="XML"
-                                {% include "messages-view-call.html" %}
+                                {% include include_trigger_html %}
                         />
                         <input class="btn btn-sm rounded-xl" type="checkbox" name="payload-type" id="json-toggle"
                                aria-label="JSON" hx-on:input="localStorage.setItem('json', this.checked)"
                                value="JSON"
-                                {% include "messages-view-call.html" %}
+                                {% include include_trigger_html %}
                         />
                         <button class="btn btn-sm btn-square rounded-xl" type="reset" aria-label="Clear filters"
                                 hx-on:click="localStorage.setItem('json', 'false');localStorage.setItem('xml', 'false');"
-                                {% include "messages-view-call.html" with htmx_trigger="reset from:#payload-type-filters-form delay:10ms" %}>
+                                {% include include_trigger_html with htmx_trigger="reset from:#payload-type-filters-form delay:10ms" %}>
                             <i class="fa-solid fa-x"></i>
                         </button>
                         <div class="flex gap-4 items-center" style="margin-top: 0.25em">
@@ -144,7 +150,7 @@
                                         name="errored-only"
                                         id="errored-only-toggle"
                                         hx-on:input="localStorage.setItem('errored', this.checked)"
-                                        {% include "messages-view-call.html" %}
+                                        {% include include_trigger_html %}
                                 />
                                 Show errored only
                             </label>
@@ -156,7 +162,7 @@
                                         name="include-acknowledged"
                                         id="include-acknowledged-toggle"
                                         hx-on:input="localStorage.setItem('acknowledged', this.checked)"
-                                        {% include "messages-view-call.html" %}
+                                        {% include include_trigger_html %}
                                 />
                                 Include acknowledged
                             </label>
