@@ -7,6 +7,7 @@
     {% load static %}
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
           integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
@@ -14,8 +15,10 @@
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/brogrammer.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js"></script>
 </head>
 <body>
+<span id="tour-dashboard-overview">
 {% include "navbar.html" with include_trigger_html="messages-view-call.html" %}
 <div hx-get="{% app_subpath %}/tmpl/messages"
         {% include "messages-view-call.html" with htmx_trigger="load delay:1ms" %}>
@@ -39,12 +42,14 @@
     <span id="message-results"></span>
 </div>
 
+
 <div class="dock">
+    <span id="tour-stats">
     <button onclick="window.location.href='{% app_subpath %}/stats'">
         <i class="fa-solid fa-arrow-up-right-dots"></i>
         <span class="dock-label">Statistics</span>
     </button>
-
+</span>
     <button class="dock-active">
         <i class="fa-solid fa-house"></i>
         <span class="dock-label">Home</span>
@@ -60,7 +65,7 @@
 {% include "msg_reingestion/msg_reingest_modal.html" %}
 {% include "msg_related/msg_related_modal.html" %}
 {% include "footer.html" %}
-
+</span>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
@@ -95,4 +100,13 @@
 </script>
 <script src="{% static 'js/ws.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/tour.js' %}"></script>
+{% if user.is_authenticated and user.groups.count != 0  or DISABLED_AUTH %}
+<script>
+    if (localStorage.getItem("first-tour-passed") === null) {
+        driverObj.drive();
+    }
+
+</script>
+{% endif %}
 </html>
