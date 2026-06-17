@@ -190,10 +190,28 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
                     msg_payload = msg_payload.strip()
 
             GenericPublisher.send_messages_to_broker([msg_payload], msg.exchange_name,
-                                                     msg.routing_key, dump_json_body=msg.payload_format=="json")
+                                                     msg.routing_key, dump_json_body=msg.payload_format == "json")
             return Response(status=status.HTTP_200_OK)
         except Exception:
             return Response(status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_object(self, msg_id: int) -> QuerySet:
+        user_filters = Q(id=msg_id)
+        return Message.objects.filter(user_filters).first()
+
+
+class RelatedMessageTemplateView(TemplateView):
+    template_name: str = "msg_related/msg_related_content.html"
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+
+        msg_id: int = self.kwargs.get("msg_id", None)
+        msg: Message | None = self.get_object(msg_id)
+        if msg is not None:
+            context["related_messages"] = msg.get_related_messages()
+            context["original_message"] = msg
+        return context
 
     def get_object(self, msg_id: int) -> QuerySet:
         user_filters = Q(id=msg_id)
