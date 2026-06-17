@@ -1,5 +1,6 @@
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
+from django.db.models import QuerySet
 from psqlextra.models import PostgresPartitionedModel
 from psqlextra.partitioning import PostgresCurrentTimePartitioningStrategy, PostgresTimePartitionSize, \
     PostgresPartitioningConfig
@@ -23,6 +24,7 @@ class Message(PostgresPartitionedModel):
     acknowledged = models.BooleanField(default=False, verbose_name=MODEL_LABELS.get("acknowledged"))
     exchange_name = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("exchange_name"))
     routing_key = models.CharField(max_length=255, null=True, verbose_name=MODEL_LABELS.get("routing_key"))
+
     class PartitioningMeta:
         method: str = PostgresPartitioningMethod.RANGE
         key: list = ["created_at"]
@@ -44,3 +46,19 @@ class Message(PostgresPartitionedModel):
                 count=2
             )
         )
+
+    def get_related_messages(self) -> QuerySet:
+        from django.db.models import F, Case, When, Value
+        from django.db.models.functions import Abs, Coalesce
+
+        objs = self.__class__.objects.filter(hash=self.hash).annotate(
+            id_diff=Abs(F('id') - self.id),
+            time_diff=Case(
+                When(processing_time__isnull=False,
+                     then=Abs(F('processing_time') - Coalesce(self.processing_time, Value(0.0)))),
+                default=Value(999999.0),
+                output_field=models.FloatField()
+            )
+        ).order_by('message_type', 'id_diff', 'time_diff').distinct('message_type')
+        return objs
+

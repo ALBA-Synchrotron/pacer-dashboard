@@ -21,6 +21,7 @@
 </div>
 <div class="tooltip" data-tip="See related messages">
     <button class="btn btn-square btn-sm rounded-lg" aria-label="see related message"
+            hx-on:click="openRelatedModal({{ msg.id }})"
     >
         <i class="fa-solid fa-arrow-up-right-from-square"
            style="font-size: 1.5em"></i>
