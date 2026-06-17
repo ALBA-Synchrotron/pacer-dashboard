@@ -1,11 +1,15 @@
 import json
 import re
 from collections import Counter
+from datetime import datetime, timedelta
 
 from django.db.models import QuerySet, Q, Count
+from django.db.models.functions import TruncMonth
 from django.views.generic import TemplateView
 
 from dashboard.models import GroupProfile, Message
+from dashboard.utils.apex_charts import generate_apex_line_chart_data_from_queryset, \
+    generate_apex_error_heatmap_chart_data_from_queryset
 from dashboard.utils.messages import get_user_filters
 
 
@@ -22,6 +26,7 @@ def normalize_error_message(error_message: str) -> str:
     error_message = re.sub(r"\b[A-Z]{1,10}-\d+\b", "<identifier>", error_message)
 
     return error_message.strip()
+
 
 class StatisticsView(TemplateView):
     template_name: str = "stats/statistics.html"
@@ -52,7 +57,7 @@ class StatisticsTemplateView(TemplateView):
             "title": "Messages",
             "subtitle": "Total messages processed",
             "icon": "fa-solid fa-envelope",
-            "value": objects.count(),
+            "value": all_objects.count(),
             "text_class": "text-primary"
         }
 
@@ -60,7 +65,7 @@ class StatisticsTemplateView(TemplateView):
             "title": "Errors",
             "subtitle": "Total errors captured",
             "icon": "fa-solid fa-triangle-exclamation",
-            "value": objects.filter(errored=True).count(),
+            "value": all_objects.filter(errored=True).count(),
             "text_class": "text-warning"
         }
 
@@ -84,9 +89,14 @@ class StatisticsTemplateView(TemplateView):
 
         msg_types = GroupProfile.get_allowed_message_types(self.request.user)
 
+        context["msg_type_pie"] = {"series": [], "labels": []}
+
         for msg_type in msg_types:
             msg_count = objects.filter(message_type=msg_type).count()
             errored_msg_count = objects.filter(message_type=msg_type, errored=True).count()
+
+            context["msg_type_pie"]["series"].append( msg_count)
+            context["msg_type_pie"]["labels"].append(msg_type)
 
             error_messages = (
                 objects
@@ -112,4 +122,29 @@ class StatisticsTemplateView(TemplateView):
                 "most_repeated_error_count": most_repeated_error[0][1] if most_repeated_error else 0,
             })
             context["msg_types_table_stats"].sort(key=lambda x: x["error_rate"])
+
+        msg_type_monthly = get_message_monthly_stats(182, objects)
+        context["monthly_message_type_stats"] = generate_apex_line_chart_data_from_queryset(msg_type_monthly)
+        errored_msg_type_monthly = get_message_monthly_stats(182, objects, errored=True)
+        context["monthly_error_message_type_stats"] = generate_apex_line_chart_data_from_queryset(errored_msg_type_monthly)
+
+        msg_type_year = get_message_monthly_stats(365, objects)
+        errored_msg_type_year = get_message_monthly_stats(365, objects, errored=True)
+
+        context["error_heatmap_stats"] = generate_apex_error_heatmap_chart_data_from_queryset(msg_type_year,
+                                                                                              errored_msg_type_year)
+
         return context
+
+
+def get_message_monthly_stats(days_back: int, objects: QuerySet, **kwargs) -> tuple:
+    ago_period = datetime.now() - timedelta(days=days_back)
+    monthly_stats = (
+        objects
+        .filter(created_at__gte=ago_period, **kwargs)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month', 'message_type')
+        .annotate(count=Count('id'))
+        .order_by('month', 'message_type')
+    )
+    return monthly_stats

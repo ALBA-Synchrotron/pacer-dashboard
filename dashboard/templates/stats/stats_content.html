@@ -1,9 +1,17 @@
-<div class="flex flex-container items-center justify-center">
+<div class="flex flex-container items-center justify-center" style="margin-top: -1.5em">
     <div class="stats shadow">
         {% include 'stats/general_stat.html' with stats=total_messages_general %}
         {% include 'stats/general_stat.html' with stats=total_errors_general %}
         {% include 'stats/general_stat.html' with stats=total_users_general %}
         {% include 'stats/general_stat.html' with stats=total_investigations_general %}
+    </div>
+</div>
+<div style="margin-top: 0.5em">
+    <div class="grid grid-cols-2 gap-4">
+        <div id="msg-type-per-month"></div>
+        <div id="msg-type-error-per-month"></div>
+        <div id="errors-heatmap"></div>
+        <div id="msg-type-pie-chart"></div>
     </div>
 </div>
 
@@ -27,19 +35,158 @@
             <tbody>
             {% for msg_type_stat in msg_types_table_stats %}
                 {% if msg_type_stat.msg_count > 0 %}
-                <tr>
-                    <th>{{ forloop.counter }}</th>
-                    <td>{{ msg_type_stat.type }}</td>
-                    <td>{{ msg_type_stat.msg_count }}</td>
-                    <td>{{ msg_type_stat.error_msg_count }}</td>
-                    <td style="{% if msg_type_stat.error_rate < 10 %}color: green{% else %}color: red{% endif %}"
-                        }><b>{{ msg_type_stat.error_rate }}%</b></td>
-                    <td class="font-mono">{{ msg_type_stat.most_repeated_error }}</td>
-                    <td><b>{{ msg_type_stat.most_repeated_error_count }}</b></td>
-                </tr>
+                    <tr>
+                        <th>{{ forloop.counter }}</th>
+                        <td>{{ msg_type_stat.type }}</td>
+                        <td>{{ msg_type_stat.msg_count }}</td>
+                        <td>{{ msg_type_stat.error_msg_count }}</td>
+                        <td style="{% if msg_type_stat.error_rate < 10 %}color: green{% else %}color: red{% endif %}"
+                            }><b>{{ msg_type_stat.error_rate }}%</b></td>
+                        <td class="font-mono">{{ msg_type_stat.most_repeated_error }}</td>
+                        <td><b>{{ msg_type_stat.most_repeated_error_count }}</b></td>
+                    </tr>
                 {% endif %}
             {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+<script>
+    var options = {
+        series:
+            {{ monthly_message_type_stats.series|safe }}
+        ,
+        chart: {
+            height: 450,
+            width: 800,
+            type: 'line',
+            zoom: {
+                enabled: true,
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        stroke: {
+            curve: 'straight',
+        },
+        title: {
+            text: 'Messages Trends by Month',
+            align: 'center',
+        },
+        grid: {
+            row: {
+                colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+                opacity: 0.5,
+            },
+        },
+        xaxis: {
+            categories: {{ monthly_message_type_stats.categories|safe }},
+        },
+    }
+
+    var chart = new ApexCharts(document.querySelector('#msg-type-per-month'), options)
+    chart.render()
+    var options = {
+        series:
+            {{ monthly_error_message_type_stats.series|safe }}
+        ,
+        chart: {
+            height: 450,
+            width: 800,
+            type: 'line',
+            zoom: {
+                enabled: true,
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        stroke: {
+            curve: 'straight',
+        },
+        title: {
+            text: 'Error Trends by Month',
+            align: 'center',
+        },
+        grid: {
+            row: {
+                colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+                opacity: 0.5,
+            },
+        },
+        xaxis: {
+            categories: {{ monthly_error_message_type_stats.categories|safe }},
+        },
+    }
+
+    var chart = new ApexCharts(document.querySelector('#msg-type-error-per-month'), options)
+    chart.render()
+    var options = {
+        series: {{ error_heatmap_stats.series|safe }},
+        chart: {
+            height: 380,
+            width: 800,
+            type: 'heatmap',
+        },
+        plotOptions: {
+            heatmap: {
+                shadeIntensity: 0.5,
+                radius: 2,
+                useFillColorAsStroke: false,
+                colorScale: {
+                    // Continuous gradient legend replaces the default categorical legend.
+                    // The arrow tracks the hovered cell's value along the spectrum and
+                    // automatically reorients based on legend.position.
+                    gradientLegend: {
+                        enabled: true,
+                        width: '75%',
+                        thickness: 14,
+                        showHoverValue: true,
+                    },
+                },
+            },
+        },
+        colors: ['#008FFB'],
+        dataLabels: {
+            enabled: false,
+        },
+        stroke: {
+            width: 1,
+        },
+        legend: {
+            position: 'right',
+        },
+        title: {
+            text: 'Errors Heatmap',
+        },
+    }
+
+    var chart = new ApexCharts(document.querySelector('#errors-heatmap'), options)
+    chart.render()
+
+    var options = {
+        series: {{ msg_type_pie.series|safe }},
+        chart: {
+            width: 600,
+            type: 'pie',
+        },
+        labels: {{ msg_type_pie.labels|safe }},
+        responsive: [
+            {
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200,
+                    },
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+            },
+        ],
+    }
+
+    var chart = new ApexCharts(document.querySelector('#msg-type-pie-chart'), options)
+    chart.render()
+</script>

@@ -21,8 +21,9 @@
     <span class="loading loading-dots loading-lg text-primary"></span>
 </div>
 <div class="container mx-auto">
-    <div  hx-get="{% app_subpath %}/tmpl/stats"
-        {% include "stats-view-call.html" with htmx_trigger="load" %}>
+    <div hx-get="{% app_subpath %}/tmpl/stats"
+        {% include "stats-view-call.html" with htmx_trigger="load delay:1ms" %}>
+</div>
         <span id="stats-content">
 
         </span>
@@ -66,6 +67,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/json.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script type="module" src="https://unpkg.com/cally"></script>
 <script>
     document.body.addEventListener('htmx:configRequest', function (event) {
