@@ -19,7 +19,7 @@ def generate_apex_error_heatmap_chart_data_from_queryset(queryset: QuerySet, err
         if msg_type not in data:
             data[msg_type] = []
 
-        error_rate = round((error_count / count) * 100, 3) if count else 0
+        error_rate = round((error_count / count) * 100, 1) if count else 0
         data[msg_type].append({"x": month, "y": error_rate})
 
     return {
