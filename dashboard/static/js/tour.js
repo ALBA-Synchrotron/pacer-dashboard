@@ -2,7 +2,7 @@ const driver = window.driver.js.driver;
 
 const driverObj = driver({
     showProgress: true,
-    onDestroyed: function() {
+    onDestroyed: function () {
         localStorage.setItem('first-tour-passed', 'true');
     },
     steps: [

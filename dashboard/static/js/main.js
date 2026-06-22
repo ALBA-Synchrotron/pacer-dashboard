@@ -123,3 +123,9 @@ function openRelatedModal(messageId) {
         swap: "innerHTML"
     });
 }
+
+function tourAgain() {
+    localStorage.removeItem('first-tour-passed');
+    window.location.href = appContextPath + "/";
+    driverObj.drive();
+}
