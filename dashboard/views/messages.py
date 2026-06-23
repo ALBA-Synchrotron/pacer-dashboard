@@ -140,7 +140,7 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
         msg: Message | None = self.get_object(msg_id)
 
         allowed_reingestions = [
-            g.groupprofile.allowed_message_types_reingest.split(",")
+            g.groupprofile.allowed_message_types_reingest or "".split(",")
             for g in self.request.user.groups.all()
         ]
 
