@@ -95,7 +95,9 @@ def can_reingest_message(user, msg):
         return True
 
     allowed_reingestions = [
-        (g.groupprofile.allowed_message_types_reingest or "" .split(",") or [])
+        message_type
         for g in user.groups.all()
+        for message_type in (g.groupprofile.allowed_message_types_reingest or "").split(",")
+        if message_type
     ]
-    return msg.message_type in [item for sublist in allowed_reingestions for item in sublist]
+    return msg.message_type in allowed_reingestions

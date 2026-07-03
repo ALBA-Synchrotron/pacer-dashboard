@@ -140,13 +140,12 @@ class MessageReingestionAPIView(LoginRequiredMixin, PermissionRequiredMixin, Gen
         msg: Message | None = self.get_object(msg_id)
 
         allowed_reingestions = [
-            g.groupprofile.allowed_message_types_reingest or "".split(",")
+            message_type
             for g in self.request.user.groups.all()
+            for message_type in (g.groupprofile.allowed_message_types_reingest or "").split(",")
+            if message_type
         ]
-
-        return GroupProfile.message_actions_allowed(self.request.user) and msg.message_type in [item for sublist in
-                                                                                                allowed_reingestions for
-                                                                                                item in sublist]
+        return GroupProfile.message_actions_allowed(self.request.user) and msg.message_type in allowed_reingestions
 
     def post(self, request, *args, **kwargs):
         msg_id: int = int(request.POST.get("msg-id", 0))
