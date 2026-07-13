@@ -12,3 +12,6 @@ SECRET_KEY: str = os.getenv("SECRET_KEY")
 ALLOWED_HOSTS: list = ["*"]
 
 DEBUG: bool = False
+
+ES_DATASET_INDEX: str = "all_datasets_test"
+ES_PUBLIC_DATASET_INDEX: str = "public_datasets_test"
