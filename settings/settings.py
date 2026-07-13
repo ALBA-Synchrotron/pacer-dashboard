@@ -174,6 +174,8 @@ PACER_RMQ_PROTOCOL: str = os.getenv("RMQ_PROTOCOL", "amqp")
 
 PACER_INVESTIGATION_OPS_EXCHANGE: str = "investigation-ops-exchange"
 PACER_INVESTIGATION_OPS_ROUTING_KEY: str = "investigation.ops"
+PACER_INTERNAL_DATASET_EXCHANGE: str = "dataset-internal-ingest-exchange"
+PACER_DATASET_INDEXING_ROUTING_KEY: str = "dataset.indexing"
 
 CELERY_TIMEZONE: str = TIME_ZONE
 CELERY_ACCEPT_CONTENT: list = ["application/json"]
@@ -222,3 +224,4 @@ USER_CACHE_KEYS_SUFFIX: dict = {
 ADMIN_ROLE_GROUP_NAME: str = "Administrator"
 
 TESTING_MODE: bool = False
+ICAT_BATCH_SIZE: int = 2000
