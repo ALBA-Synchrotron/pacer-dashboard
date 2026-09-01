@@ -45,7 +45,7 @@ class Command(BaseCommand):
             icat_search_filters["releaseDate__lte"] = last_day_last_month.strftime("%Y-%m-%d")
 
         investigations = icat_client.search("Investigation", conditions=icat_search_filters,
-                                            flatten_single=False)
+                                            flatten_single=False) or []
 
         logger.info(f"Found {len(investigations)} PUBLIC investigations to index.")
 
