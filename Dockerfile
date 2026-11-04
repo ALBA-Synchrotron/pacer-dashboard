@@ -28,8 +28,7 @@ RUN pip install uwsgi==2.0.31
 RUN python manage.py collectstatic -v 0 --settings=$SETTINGS_FILE
 
 RUN apt-get purge -y --auto-remove \
-    build-essential \
-    python-dev
+    build-essential
 
 # UWSGI conf
 RUN echo "[uwsgi]" > uwsgi.ini \
