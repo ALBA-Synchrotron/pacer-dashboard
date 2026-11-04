@@ -1,8 +1,9 @@
-FROM registry.cells.es/docker/python:3.13.5-bullseye
+FROM python:3.15.2-slim-trixie
 
 WORKDIR /app
 
-RUN apt-get update
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential
 
 COPY requirements.txt /app/
 

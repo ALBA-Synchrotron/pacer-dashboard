@@ -1,4 +1,4 @@
-FROM registry.cells.es/docker/python:3.13.5-slim-bullseye
+FROM python:3.15.2-slim-trixie
 
 ARG SETTINGS_FILE="settings.settings_local"
 ENV PYTHONUNBUFFERED=1
@@ -12,7 +12,6 @@ RUN useradd -g pacer -M pacer
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    python-dev \
     && apt-get clean \
     && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
@@ -24,7 +23,7 @@ COPY README.md /django/app/
 
 RUN pip install -r requirements.txt
 
-RUN pip install uwsgi==2.0.30
+RUN pip install uwsgi==2.0.31
 
 RUN python manage.py collectstatic -v 0 --settings=$SETTINGS_FILE
 
