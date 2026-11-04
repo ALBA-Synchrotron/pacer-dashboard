@@ -225,3 +225,5 @@ ADMIN_ROLE_GROUP_NAME: str = "Administrator"
 
 TESTING_MODE: bool = False
 ICAT_BATCH_SIZE: int = 2000
+
+SILENCED_SYSTEM_CHECKS: list[str] = ["fields.E100"]
