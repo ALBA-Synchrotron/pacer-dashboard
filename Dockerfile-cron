@@ -24,8 +24,7 @@ COPY README.md /django/app/
 RUN pip install -r requirements.txt
 
 RUN apt-get purge -y --auto-remove \
-    build-essential \
-    python-dev
+    build-essential
 
 USER pacer
 
