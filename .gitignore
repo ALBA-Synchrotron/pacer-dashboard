@@ -22,4 +22,6 @@ env
 img.pdf
 temp.pdf
 /config/
-
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
