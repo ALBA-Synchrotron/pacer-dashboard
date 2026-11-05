@@ -1,55 +1,97 @@
-FROM python:3.15.2-slim-trixie
+FROM python:3.15.2-slim-trixie AS builder
 
-ARG SETTINGS_FILE="settings.settings_local"
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV TZ=Europe/Madrid
+ARG SETTINGS_FILE=settings.settings_local
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    TZ=Europe/Madrid
 
 WORKDIR /django/app
 
-RUN addgroup pacer
-RUN useradd -g pacer -M pacer
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    && apt-get clean \
-    && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /django/app/
-COPY dashboard/ /django/app/dashboard/
-COPY settings/ /django/app/settings/
-COPY manage.py /django/app/
-COPY README.md /django/app/
+RUN python -m venv /opt/venv
 
-RUN pip install -r requirements.txt
+ENV PATH="/opt/venv/bin:$PATH"
 
-RUN pip install uwsgi==2.0.31
+COPY requirements.txt ./
 
-RUN python manage.py collectstatic -v 0 --settings=$SETTINGS_FILE
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir uwsgi==2.0.31
 
-RUN apt-get purge -y --auto-remove \
-    build-essential
+COPY dashboard/ ./dashboard/
+COPY settings/ ./settings/
+COPY manage.py README.md ./
 
-# UWSGI conf
-RUN echo "[uwsgi]" > uwsgi.ini \
-    && echo "chdir=/django/app/" >> uwsgi.ini \
-    && echo "module=settings.wsgi:application" >> uwsgi.ini \
-    && echo "env=DJANGO_SETTINGS_MODULE=$SETTINGS_FILE" >> uwsgi.ini \
-    && echo "master=True" >> uwsgi.ini \
-    && echo "enable-threads=True" >> uwsgi.ini \
-    && echo "pidfile=/tmp/project-master.pid" >> uwsgi.ini \
-    && echo "http-socket=:3000" >> uwsgi.ini \
-    && echo "processes=4" >> uwsgi.ini \
-    && echo "threads=2" >> uwsgi.ini \
-    && echo "harakiri=100" >> uwsgi.ini \
-    && echo "max-requests=5000" >> uwsgi.ini \
-    && echo "buffer-size=32768" >> uwsgi.ini \
-    && echo "static-map=/static/=static" >> uwsgi.ini \
-    && echo "touch-reload=/django/app/README.md" >> uwsgi.ini
+RUN python manage.py collectstatic -v 0 --settings="$SETTINGS_FILE"
+
+RUN rm -rf \
+    /opt/venv/lib/python3.15/site-packages/pip \
+    /opt/venv/lib/python3.15/site-packages/pip-*.dist-info \
+    /opt/venv/lib/python3.15/site-packages/_pytest \
+    /opt/venv/lib/python3.15/site-packages/pytest \
+    /opt/venv/lib/python3.15/site-packages/pytest-*.dist-info \
+    && find /opt/venv -type d -name __pycache__ -prune -exec rm -rf {} + \
+    && find /opt/venv -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+
+FROM python:3.15.2-slim-trixie AS runtime
+
+ARG SETTINGS_FILE=settings.settings_local
+ARG NEW_UID=1000
+ARG PRIMARY_GID=1000
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TZ=Europe/Madrid \
+    SETTINGS_FILE=${SETTINGS_FILE} \
+    PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /django/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid "$PRIMARY_GID" pacer \
+    && useradd \
+        --uid "$NEW_UID" \
+        --gid "$PRIMARY_GID" \
+        --no-create-home \
+        --shell /usr/sbin/nologin \
+        pacer \
+    && mkdir -p /django/app/static \
+    && chown -R pacer:pacer /django/app
+
+COPY --from=builder /opt/venv /opt/venv
+
+COPY --from=builder --chown=pacer:pacer /django/app /django/app
+
+RUN chown -R pacer:pacer /django/app
+
+RUN printf '%s\n' \
+    '[uwsgi]' \
+    'chdir=/django/app/' \
+    'module=settings.wsgi:application' \
+    "env=DJANGO_SETTINGS_MODULE=${SETTINGS_FILE}" \
+    'master=True' \
+    'enable-threads=True' \
+    'pidfile=/tmp/project-master.pid' \
+    'http-socket=:3000' \
+    'processes=4' \
+    'threads=2' \
+    'harakiri=100' \
+    'max-requests=5000' \
+    'buffer-size=32768' \
+    'static-map=/static/=static' \
+    'touch-reload=/django/app/README.md' \
+    > /django/app/uwsgi.ini \
+    && chown pacer:pacer /django/app/uwsgi.ini
 
 USER pacer
 
-# Serve app
 EXPOSE 3000
 
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
